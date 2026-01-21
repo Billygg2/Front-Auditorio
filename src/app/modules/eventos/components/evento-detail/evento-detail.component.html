@@ -1,0 +1,214 @@
+<div class="container mt-4" *ngIf="!loading; else loadingTemplate">
+  <!-- Botón de volver -->
+  <div class="mb-4">
+    <button class="btn btn-outline-secondary" (click)="volverALista()">
+      <i class="fas fa-arrow-left me-2"></i> Volver a la lista
+    </button>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+  </div>
+
+  <!-- Detalles del evento -->
+  <div *ngIf="evento" class="card shadow">
+    <!-- Header con estado -->
+    <div class="card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h3 class="mb-0">
+            <i class="fas fa-calendar-alt me-2"></i>
+            {{ evento.nombreEvento }}
+          </h3>
+          <span class="badge" [ngClass]="getEstadoBadgeClass(evento.estado)">
+            {{ getEstadoText(evento.estado) }}
+          </span>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="d-flex gap-2">
+          <button *ngIf="evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO'" 
+                  class="btn btn-warning" 
+                  (click)="editarEvento()">
+            <i class="fas fa-edit me-1"></i> Editar
+          </button>
+          
+          <button *ngIf="evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO'" 
+                  class="btn btn-danger" 
+                  (click)="cancelarEvento()">
+            <i class="fas fa-times me-1"></i> Cancelar
+          </button>
+          
+          <!-- Botones para administradores -->
+          <div *ngIf="isAdmin && evento.estado === 'PENDIENTE'" class="d-flex gap-2">
+            <button class="btn btn-success" (click)="aprobarEvento()">
+              <i class="fas fa-check me-1"></i> Aprobar
+            </button>
+            <button class="btn btn-danger" (click)="rechazarEvento()">
+              <i class="fas fa-times me-1"></i> Rechazar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuerpo del card -->
+    <div class="card-body">
+      <!-- Información básica -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h5 class="border-bottom pb-2 mb-3">
+            <i class="fas fa-info-circle me-2 text-primary"></i>
+            Información del Evento
+          </h5>
+          
+          <div class="mb-3">
+            <strong>Descripción:</strong>
+            <p class="mt-1">{{ evento.descripcion }}</p>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <strong><i class="fas fa-calendar me-2"></i>Fecha:</strong>
+              <p class="mt-1">{{ formatFecha(evento.fechaEvento) }}</p>
+            </div>
+            
+            <div class="col-md-6 mb-2">
+              <strong><i class="fas fa-clock me-2"></i>Horario:</strong>
+              <p class="mt-1">{{ formatHora(evento.horaInicio) }} - {{ formatHora(evento.horaFin) }}</p>
+            </div>
+            
+            <div class="col-md-6 mb-2">
+              <strong><i class="fas fa-users me-2"></i>Asistentes:</strong>
+              <p class="mt-1">{{ evento.numeroAsistentes }} personas</p>
+            </div>
+            
+            <div class="col-md-6 mb-2">
+              <strong><i class="fas fa-chair me-2"></i>Disposición:</strong>
+              <p class="mt-1">{{ evento.tipoDisposicion }}</p>
+            </div>
+          </div>
+          
+          <!-- Opciones adicionales -->
+          <div class="mt-3">
+            <strong>Opciones:</strong>
+            <div class="d-flex gap-3 mt-2">
+              <span class="badge" [ngClass]="evento.publicoExterno ? 'bg-info' : 'bg-secondary'">
+                <i class="fas fa-users me-1"></i>
+                {{ evento.publicoExterno ? 'Público Externo' : 'Público Interno' }}
+              </span>
+              
+              <span class="badge" [ngClass]="evento.requiereRegistroPrevio ? 'bg-warning' : 'bg-secondary'">
+                <i class="fas fa-clipboard-list me-1"></i>
+                {{ evento.requiereRegistroPrevio ? 'Requiere Registro' : 'Sin Registro' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Responsable -->
+        <div class="col-md-6">
+          <h5 class="border-bottom pb-2 mb-3">
+            <i class="fas fa-user-tie me-2 text-primary"></i>
+            Responsable del Evento
+          </h5>
+          
+          <div *ngIf="evento.responsable" class="card">
+            <div class="card-body">
+              <h6 class="card-title">{{ evento.responsable.nombre }}</h6>
+              <p class="mb-1">
+                <i class="fas fa-envelope me-2"></i>
+                {{ evento.responsable.correo }}
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-phone me-2"></i>
+                {{ evento.responsable.telefono }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Motivo de rechazo/cancelación -->
+          <div *ngIf="evento.motivoRechazo" class="mt-4">
+            <h5 class="border-bottom pb-2 mb-3">
+              <i class="fas fa-exclamation-circle me-2 text-danger"></i>
+              Motivo
+            </h5>
+            <div class="alert alert-danger">
+              <p class="mb-0">{{ evento.motivoRechazo }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requerimientos técnicos -->
+      <div *ngIf="evento.requerimientos && evento.requerimientos.length > 0" class="mt-4">
+        <h5 class="border-bottom pb-2 mb-3">
+          <i class="fas fa-tools me-2 text-primary"></i>
+          Requerimientos Técnicos
+        </h5>
+        
+        <div class="row">
+          <div *ngFor="let req of evento.requerimientos" class="col-md-4 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">
+                  {{ req.tipo }}
+                  <span class="badge ms-2" [ngClass]="req.requerido ? 'bg-primary' : 'bg-secondary'">
+                    {{ req.requerido ? 'Requerido' : 'Opcional' }}
+                  </span>
+                </h6>
+                <p class="card-text">
+                  <i class="fas fa-box me-2"></i>
+                  Cantidad: {{ req.cantidad }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay requerimientos -->
+      <div *ngIf="(!evento.requerimientos || evento.requerimientos.length === 0)" class="alert alert-info mt-4">
+        <i class="fas fa-info-circle me-2"></i>
+        Este evento no tiene requerimientos técnicos especificados.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer bg-light">
+      <div class="row">
+<div class="col-md-6">
+  <small class="text-muted">
+    <i class="fas fa-calendar-plus me-1"></i>
+    
+    Creado por: Sistema
+  </small>
+</div>
+        <div class="col-md-6 text-end">
+          <small class="text-muted">
+            <i class="fas fa-id-badge me-1"></i>
+            ID: {{ evento.id }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si no se encuentra el evento -->
+  <div *ngIf="!evento && !error" class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    No se encontró el evento solicitado.
+  </div>
+</div>
+
+<!-- Template de carga -->
+<ng-template #loadingTemplate>
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Cargando detalles del evento...</p>
+  </div>
+</ng-template>

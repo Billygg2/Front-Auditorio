@@ -1,0 +1,423 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EventoService } from "../../../../core/services/evento.service";
+import { AuthService } from '../../../../core/services/auth.service';
+import { EventoAuditorio, TipoRequerimiento } from '../../../../core/models/model';
+import { Subscription } from 'rxjs';
+
+@Component({
+  selector: 'app-evento-form',
+  templateUrl: './evento-form.component.html',
+  styleUrls: ['./evento-form.component.scss']
+})
+export class EventoFormComponent implements OnInit, OnDestroy {
+  eventoForm: FormGroup;
+  tiposRequerimiento = Object.values(TipoRequerimiento);
+  isEditMode = false;
+  eventoId?: number;
+  loading = false;
+  disponibilidadVerificada = false;
+  disponible = false;
+  minDate: string;
+  maxDate: string;
+  formErrors: any = {}; // AÑADE ESTA LÍNEA
+  private subscriptions: Subscription = new Subscription();
+
+  constructor(
+    private fb: FormBuilder,
+    private eventoService: EventoService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    public router: Router 
+  ) {
+    this.eventoForm = this.createForm();
+    this.minDate = this.getFechaMinima();
+    this.maxDate = this.getFechaMaxima();
+  }
+
+  ngOnInit(): void {
+    const paramSub = this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.eventoId = +params['id'];
+        this.cargarEvento();
+      }
+    });
+    this.subscriptions.add(paramSub);
+
+    // Suscribirse a cambios para debug
+    this.eventoForm.valueChanges.subscribe(() => {
+      this.actualizarErroresFormulario();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  private createForm(): FormGroup {
+    return this.fb.group({
+      nombreEvento: ['', [Validators.required, Validators.maxLength(200), Validators.minLength(3)]],
+      descripcion: ['', [Validators.required, Validators.maxLength(500), Validators.minLength(10)]],
+      fechaEvento: ['', [Validators.required, this.fechaMinimaValidator.bind(this)]],
+      horaInicio: ['08:00', [Validators.required, this.horaValidator.bind(this)]],
+      horaFin: ['09:00', [Validators.required, this.horaValidator.bind(this)]],
+      numeroAsistentes: [1, [Validators.required, Validators.min(1), Validators.max(500)]],
+      publicoExterno: [false],
+      requiereRegistroPrevio: [false],
+      tipoDisposicion: ['AULA', Validators.required],
+      responsable: this.fb.group({
+        nombre: ['', [Validators.required, Validators.minLength(3)]],
+        correo: ['', [Validators.required, Validators.email]],
+        telefono: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
+      }),
+      requerimientos: this.fb.array([])
+    }, { validators: this.horaFinPosteriorValidator });
+  }
+
+  // Validadores personalizados
+  private fechaMinimaValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    if (!control.value) return null;
+    
+    const fechaEvento = new Date(control.value);
+    const hoy = new Date();
+    const fechaMinima = new Date();
+    fechaMinima.setDate(hoy.getDate() + 14);
+    
+    fechaEvento.setHours(0, 0, 0, 0);
+    fechaMinima.setHours(0, 0, 0, 0);
+    
+    return fechaEvento < fechaMinima ? { fechaMinima: true } : null;
+  }
+
+  private horaValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    if (!control.value) return null;
+    
+    const horaRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!horaRegex.test(control.value)) {
+      return { formatoHoraInvalido: true };
+    }
+    
+    const [horas, minutos] = control.value.split(':').map(Number);
+    const horaDate = new Date(2000, 0, 1, horas, minutos);
+    const minTime = new Date(2000, 0, 1, 8, 0);
+    const maxTime = new Date(2000, 0, 1, 20, 0);
+    
+    if (horaDate < minTime || horaDate > maxTime) {
+      return { horaFueraRango: true };
+    }
+    
+    return null;
+  }
+
+  private horaFinPosteriorValidator(group: FormGroup): { [key: string]: boolean } | null {
+    const horaInicio = group.get('horaInicio')?.value;
+    const horaFin = group.get('horaFin')?.value;
+    
+    if (!horaInicio || !horaFin) return null;
+    
+    const inicio = new Date(`2000-01-01T${horaInicio}`);
+    const fin = new Date(`2000-01-01T${horaFin}`);
+    
+    return fin <= inicio ? { horaFinAnterior: true } : null;
+  }
+
+  get requerimientos(): FormArray {
+    return this.eventoForm.get('requerimientos') as FormArray;
+  }
+
+  agregarRequerimiento(): void {
+    this.requerimientos.push(this.fb.group({
+      tipo: ['', Validators.required],
+      cantidad: [1, [Validators.required, Validators.min(1)]],
+      requerido: [true]
+    }));
+  }
+
+  eliminarRequerimiento(index: number): void {
+    this.requerimientos.removeAt(index);
+  }
+
+  private cargarEvento(): void {
+    if (!this.eventoId) return;
+    
+    this.loading = true;
+    const eventoSub = this.eventoService.obtenerEventoPorId(this.eventoId).subscribe({
+      next: (evento) => {
+        this.patchFormWithEvento(evento);
+      },
+      error: (err) => {
+        console.error('Error cargando evento:', err);
+        alert('Error cargando evento. Por favor, intente nuevamente.');
+        this.router.navigate(['/eventos']);
+      },
+      complete: () => this.loading = false
+    });
+    this.subscriptions.add(eventoSub);
+  }
+
+  private patchFormWithEvento(evento: EventoAuditorio): void {
+    // Limpiar requerimientos existentes
+    while (this.requerimientos.length) {
+      this.requerimientos.removeAt(0);
+    }
+
+    // Parsear fechas y horas
+    let fechaEventoStr: string;
+    let horaInicioStr: string;
+    let horaFinStr: string;
+
+    if (typeof evento.fechaEvento === 'string') {
+      fechaEventoStr = evento.fechaEvento.split('T')[0];
+    } else {
+      fechaEventoStr = (evento.fechaEvento as Date).toISOString().split('T')[0];
+    }
+
+    if (typeof evento.horaInicio === 'string') {
+      horaInicioStr = evento.horaInicio.substring(0, 5);
+    } else {
+      horaInicioStr = (evento.horaInicio as Date).toISOString().substring(11, 16);
+    }
+
+    if (typeof evento.horaFin === 'string') {
+      horaFinStr = evento.horaFin.substring(0, 5);
+    } else {
+      horaFinStr = (evento.horaFin as Date).toISOString().substring(11, 16);
+    }
+
+    // Agregar requerimientos
+    if (evento.requerimientos && evento.requerimientos.length > 0) {
+      evento.requerimientos.forEach(req => {
+        this.requerimientos.push(this.fb.group({
+          tipo: [req.tipo, Validators.required],
+          cantidad: [req.cantidad, [Validators.required, Validators.min(1)]],
+          requerido: [req.requerido]
+        }));
+      });
+    }
+
+    // Patch del formulario
+    this.eventoForm.patchValue({
+      nombreEvento: evento.nombreEvento,
+      descripcion: evento.descripcion,
+      fechaEvento: fechaEventoStr,
+      horaInicio: horaInicioStr,
+      horaFin: horaFinStr,
+      numeroAsistentes: evento.numeroAsistentes,
+      publicoExterno: evento.publicoExterno,
+      requiereRegistroPrevio: evento.requiereRegistroPrevio,
+      tipoDisposicion: evento.tipoDisposicion,
+      responsable: {
+        nombre: evento.responsable?.nombre || '',
+        correo: evento.responsable?.correo || '',
+        telefono: evento.responsable?.telefono || ''
+      }
+    });
+  }
+
+  getFechaMinima(): string {
+    const hoy = new Date();
+    const fechaMinima = new Date();
+    fechaMinima.setDate(hoy.getDate() + 14);
+    return fechaMinima.toISOString().split('T')[0];
+  }
+
+  getFechaMaxima(): string {
+    const hoy = new Date();
+    const fechaMaxima = new Date();
+    fechaMaxima.setMonth(hoy.getMonth() + 6);
+    return fechaMaxima.toISOString().split('T')[0];
+  }
+
+  verificarDisponibilidad(): void {
+    if (this.eventoForm.get('fechaEvento')?.invalid) {
+      alert('Por favor, seleccione una fecha válida (mínimo 2 semanas adelante)');
+      return;
+    }
+
+    if (this.eventoForm.hasError('horaFinAnterior')) {
+      alert('La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+
+    const formValue = this.eventoForm.value;
+    if (!formValue.fechaEvento || !formValue.horaInicio || !formValue.horaFin) {
+      alert('Complete fecha y horarios para verificar disponibilidad');
+      return;
+    }
+
+    this.loading = true;
+    
+    const disponibilidadSub = this.eventoService.verificarDisponibilidad(
+      formValue.fechaEvento,
+      formValue.horaInicio,
+      formValue.horaFin
+    ).subscribe({
+      next: (disponible) => {
+        this.disponibilidadVerificada = true;
+        this.disponible = disponible;
+        if (disponible) {
+          alert('¡Horario disponible! Puede proceder con la solicitud.');
+        } else {
+          alert('El auditorio no está disponible en ese horario. Por favor, seleccione otro horario.');
+        }
+      },
+      error: (err) => {
+        console.error('Error verificando disponibilidad:', err);
+        alert('Error verificando disponibilidad. Por favor, intente nuevamente.');
+      },
+      complete: () => this.loading = false
+    });
+    
+    this.subscriptions.add(disponibilidadSub);
+  }
+
+  onSubmit(): void {
+    if (this.eventoForm.invalid) {
+      this.markAllAsTouched();
+      alert('Por favor complete todos los campos requeridos correctamente');
+      return;
+    }
+
+    // Validar horas manualmente
+    if (this.eventoForm.hasError('horaFinAnterior')) {
+      alert('La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+
+    // Validar duración máxima (8 horas)
+    const horaInicio = this.eventoForm.get('horaInicio')?.value;
+    const horaFin = this.eventoForm.get('horaFin')?.value;
+    
+    if (horaInicio && horaFin) {
+      const inicio = new Date(`2000-01-01T${horaInicio}`);
+      const fin = new Date(`2000-01-01T${horaFin}`);
+      const duracionHoras = (fin.getTime() - inicio.getTime()) / (1000 * 60 * 60);
+      
+      if (duracionHoras > 8) {
+        alert('La duración máxima permitida es de 8 horas');
+        return;
+      }
+    }
+
+    if (!this.isEditMode && !this.disponibilidadVerificada) {
+      const confirmar = confirm('Recomendamos verificar la disponibilidad antes de enviar. ¿Desea continuar sin verificar?');
+      if (!confirmar) return;
+    }
+
+    this.loading = true;
+    const eventoData = this.prepararDatosEvento();
+
+    const request = this.isEditMode && this.eventoId
+      ? this.eventoService.actualizarEvento(this.eventoId, eventoData)
+      : this.eventoService.crearEvento(eventoData);
+
+    const submitSub = request.subscribe({
+      next: (response) => {
+        const mensaje = this.isEditMode 
+          ? 'Evento actualizado correctamente'
+          : 'Solicitud de reserva enviada. Recibirá una confirmación por correo electrónico.';
+        
+        alert(mensaje);
+        this.router.navigate(['/eventos']);
+      },
+      error: (err) => {
+        console.error('Error procesando solicitud:', err);
+        let errorMsg = 'Error procesando la solicitud. Por favor, intente nuevamente.';
+        
+        if (err.error?.error) {
+          errorMsg = err.error.error;
+        } else if (err.error?.message) {
+          errorMsg = err.error.message;
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        
+        alert(errorMsg);
+        this.loading = false;
+      },
+      complete: () => this.loading = false
+    });
+    
+    this.subscriptions.add(submitSub);
+  }
+
+  private prepararDatosEvento(): any {
+    const eventoData = { ...this.eventoForm.value };
+
+    // Formatear fecha correctamente
+    if (eventoData.fechaEvento) {
+      const fecha = new Date(eventoData.fechaEvento);
+      // Asegurar que la fecha esté en formato YYYY-MM-DD
+      eventoData.fechaEvento = fecha.toISOString().split('T')[0];
+    }
+
+    // Asegurar que requerimientos tengan la estructura correcta
+    if (eventoData.requerimientos) {
+      eventoData.requerimientos = eventoData.requerimientos.map((req: any) => ({
+        tipo: req.tipo,
+        cantidad: req.cantidad,
+        requerido: req.requerido
+      }));
+    }
+
+    // Asegurar que responsable tenga la estructura correcta
+    if (eventoData.responsable) {
+      eventoData.responsable = {
+        nombre: eventoData.responsable.nombre,
+        correo: eventoData.responsable.correo,
+        telefono: eventoData.responsable.telefono
+      };
+    }
+
+    return eventoData;
+  }
+
+  private markAllAsTouched(): void {
+    Object.values(this.eventoForm.controls).forEach(control => {
+      if (control instanceof FormGroup) {
+        Object.values(control.controls).forEach(subControl => {
+          subControl.markAsTouched();
+        });
+      } else {
+        control.markAsTouched();
+      }
+    });
+  }
+
+  cancelar(): void {
+    if (confirm('¿Está seguro de cancelar? Los cambios no guardados se perderán.')) {
+      this.router.navigate(['/eventos']);
+    }
+  }
+
+  private actualizarErroresFormulario(): void {
+    this.formErrors = {
+      fecha: this.fechaEvento?.errors,
+      horaInicio: this.horaInicio?.errors,
+      horaFin: this.horaFin?.errors,
+      formulario: this.eventoForm.errors,
+      responsable: this.eventoForm.get('responsable')?.errors,
+      nombre: this.nombreEvento?.errors,
+      descripcion: this.descripcion?.errors
+    };
+    
+    console.log('DEBUG - Errores del formulario:', this.formErrors);
+    console.log('DEBUG - Fecha valor:', this.fechaEvento?.value);
+    console.log('DEBUG - Fecha válida?', this.fechaEvento?.valid);
+    console.log('DEBUG - Formulario válido?', this.eventoForm.valid);
+  }
+
+  // Getters para validación
+  get nombreEvento() { return this.eventoForm.get('nombreEvento'); }
+  get descripcion() { return this.eventoForm.get('descripcion'); }
+  get fechaEvento() { return this.eventoForm.get('fechaEvento'); }
+  get horaInicio() { return this.eventoForm.get('horaInicio'); }
+  get horaFin() { return this.eventoForm.get('horaFin'); }
+  get numeroAsistentes() { return this.eventoForm.get('numeroAsistentes'); }
+  get responsableNombre() { return this.eventoForm.get('responsable.nombre'); }
+  get responsableCorreo() { return this.eventoForm.get('responsable.correo'); }
+  get responsableTelefono() { return this.eventoForm.get('responsable.telefono'); }
+  get tipoDisposicion() { return this.eventoForm.get('tipoDisposicion'); }
+}

@@ -1,0 +1,217 @@
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Tarjeta principal -->
+            <div class="card shadow">
+                <!-- Cabecera con título y botón -->
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        {{ esAdmin ? 'Gestión de Eventos' : 'Mis Reservas' }}
+                    </h3>
+
+                    <div class="d-flex gap-2">
+                        <!-- Botón para vista calendario -->
+                        <button routerLink="/eventos/calendario" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-calendar me-1"></i> Calendario
+                        </button>
+
+                        <!-- Botones para admin -->
+                        <ng-container *ngIf="esAdmin">
+                            <button (click)="cargarPendientes()" class="btn btn-warning btn-sm">
+                                <i class="fas fa-clock me-1"></i> Pendientes
+                            </button>
+                            <button (click)="cargarAprobados()" class="btn btn-success btn-sm">
+                                <i class="fas fa-check me-1"></i> Aprobados
+                            </button>
+                        </ng-container>
+
+                        <!-- Botón nuevo evento -->
+                        <button routerLink="/eventos/nuevo" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-1"></i> Nueva Reserva
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cuerpo de la tarjeta -->
+                <div class="card-body">
+                    <!-- Filtros -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Estado</label>
+                            <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="form-select">
+                                <option value="">Todos los estados</option>
+                                <option *ngFor="let estado of estados" [value]="estado">
+                                    {{ getEstadoText(estado) }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Buscar</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" [(ngModel)]="filtroBusqueda" (input)="aplicarFiltros()"
+                                    class="form-control" placeholder="Buscar por nombre, descripción o responsable...">
+                            </div>
+                        </div>
+
+                        <div class="col-md-2 mb-2 d-flex align-items-end">
+                            <button (click)="limpiarFiltros()" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-times me-1"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de carga -->
+                    <div *ngIf="loading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2">Cargando eventos...</p>
+                    </div>
+
+                    <!-- Tabla de eventos -->
+                    <div *ngIf="!loading">
+                        <div *ngIf="eventosFiltrados.length === 0" class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No se encontraron eventos.
+                        </div>
+
+                        <div *ngIf="eventosFiltrados.length > 0" class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="25%">Evento</th>
+                                        <th width="15%">Fecha y Hora</th>
+                                        <th width="15%">Responsable</th>
+                                        <th width="10%">Asistentes</th>
+                                        <th width="10%">Estado</th>
+                                        <th width="25%" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let evento of eventosFiltrados">
+                                        <!-- Columna Evento -->
+                                        <td>
+                                            <div class="fw-bold">{{ evento.nombreEvento }}</div>
+                                            <small class="text-muted">{{ evento.descripcion | slice:0:50 }}{{
+                                                evento.descripcion.length > 50 ? '...' : '' }}</small>
+                                            <div *ngIf="evento.motivoRechazo" class="text-danger small">
+                                                <i class="fas fa-exclamation-triangle"></i> {{ evento.motivoRechazo }}
+                                            </div>
+                                        </td>
+
+                                        <!-- Columna Fecha y Hora -->
+                                        <td>
+                                            <div class="fw-bold">{{ formatearFecha(evento.fechaEvento) }}</div>
+                                            <div class="text-muted">
+                                                {{ formatearHora(evento.horaInicio) }} - {{
+                                                formatearHora(evento.horaFin) }}
+                                            </div>
+                                        </td>
+
+                                        <!-- Columna Responsable -->
+                                        <td>
+                                            <div class="fw-bold">{{ evento.responsable.nombre }}</div>
+                                            <div class="small">{{ evento.responsable.correo }}</div>
+                                            <div class="small">{{ evento.responsable.telefono }}</div>
+                                        </td>
+
+                                        <!-- Columna Asistentes -->
+                                        <td>
+                                            <span class="badge bg-info">{{ evento.numeroAsistentes }}</span>
+                                            <div *ngIf="evento.publicoExterno" class="small text-warning">
+                                                <i class="fas fa-external-link-alt"></i> Público externo
+                                            </div>
+                                        </td>
+
+                                        <!-- Columna Estado -->
+                                        <td>
+                                            <span [class]="'badge ' + getEstadoBadgeClass(evento.estado)">
+                                                <i class="fas" [class.fa-clock]="evento.estado === 'PENDIENTE'"
+                                                    [class.fa-check]="evento.estado === 'APROBADO'"
+                                                    [class.fa-times]="evento.estado === 'RECHAZADO' || evento.estado === 'CANCELADO'"
+                                                    [class.fa-check-double]="evento.estado === 'COMPLETADO'">
+                                                </i>
+                                                {{ getEstadoText(evento.estado) }}
+                                            </span>
+                                        </td>
+
+                                        <!-- Columna Acciones -->
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <!-- Ver detalles -->
+                                                <button [routerLink]="['/eventos/detalle', evento.id]"
+                                                    class="btn btn-outline-info" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+
+                                                <!-- Editar (solo si está permitido) -->
+                                                <button *ngIf="puedeEditar(evento)"
+                                                    [routerLink]="['/eventos/editar', evento.id]"
+                                                    class="btn btn-outline-warning" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+
+                                                <!-- Cancelar (solo si está permitido) -->
+                                                <button *ngIf="puedeCancelar(evento)"
+                                                    (click)="cancelarEvento(evento.id!)"
+                                                    class="btn btn-outline-secondary" title="Cancelar">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+
+                                                <!-- Eliminar (solo si está permitido) -->
+                                                <button *ngIf="puedeEliminar(evento)"
+                                                    (click)="eliminarEvento(evento.id!)" class="btn btn-outline-danger"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Indicadores adicionales -->
+                                            <div class="mt-1 small">
+                                                <span *ngIf="evento.requiereRegistroPrevio" class="badge bg-warning">
+                                                    <i class="fas fa-clipboard-check"></i> Requiere registro
+                                                </span>
+                                                <span *ngIf="evento.requerimientos && evento.requerimientos.length > 0"
+                                                    class="badge bg-primary ms-1">
+                                                    <i class="fas fa-tools"></i> {{ evento.requerimientos.length }}
+                                                    equipos
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Contador de resultados -->
+                            <div class="text-muted small mt-2">
+                                Mostrando {{ eventosFiltrados.length }} de {{ eventos.length }} eventos
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pie de tarjeta -->
+                <div class="card-footer text-muted">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Los eventos en estado "Pendiente" están esperando aprobación del administrador.
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small>
+                                Última actualización: {{ today | date:'medium' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

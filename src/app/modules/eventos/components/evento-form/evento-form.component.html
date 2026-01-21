@@ -1,0 +1,439 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="card shadow">
+        <!-- CABECERA -->
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">
+            <i class="fas fa-calendar-plus me-2"></i>
+            {{ isEditMode ? 'Editar Evento' : 'Nueva Reserva de Auditorio' }}
+          </h3>
+          <small class="opacity-75">
+            Todos los campos marcados con <span class="text-warning">*</span> son obligatorios
+          </small>
+        </div>
+
+        <!-- CUERPO DEL FORMULARIO -->
+        <div class="card-body">
+          <!-- INDICADOR DE CARGA -->
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">{{ isEditMode ? 'Cargando evento...' : 'Procesando solicitud...' }}</p>
+          </div>
+
+          <!-- DEBUG: Mostrar estado del formulario -->
+          <div *ngIf="!loading" class="alert alert-info mb-4">
+            <h6>DEBUG - Estado del formulario:</h6>
+            <p>Válido: {{ eventoForm.valid }}</p>
+            <p>Errores: {{ formErrors | json }}</p>
+            <p>Fecha errores: {{ fechaEvento?.errors | json }}</p>
+          </div>
+
+          <!-- FORMULARIO -->
+          <form *ngIf="!loading" [formGroup]="eventoForm" (ngSubmit)="onSubmit()" novalidate>
+            
+            <!-- SECCIÓN 1: INFORMACIÓN BÁSICA DEL EVENTO -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fas fa-info-circle me-2 text-primary"></i>
+                  Información del Evento
+                </h5>
+              </div>
+
+              <!-- Nombre del Evento -->
+              <div class="col-md-6 mb-3">
+                <label for="nombreEvento" class="form-label">
+                  Nombre del Evento <span class="text-danger">*</span>
+                </label>
+                <input type="text" id="nombreEvento" class="form-control" 
+                       formControlName="nombreEvento"
+                       placeholder="Ej: Conferencia de Tecnología 2024"
+                       [class.is-invalid]="nombreEvento?.invalid && nombreEvento?.touched">
+                <div class="invalid-feedback" *ngIf="nombreEvento?.errors?.['required']">
+                  El nombre del evento es requerido
+                </div>
+                <div class="invalid-feedback" *ngIf="nombreEvento?.errors?.['minlength']">
+                  Mínimo 3 caracteres
+                </div>
+                <div class="invalid-feedback" *ngIf="nombreEvento?.errors?.['maxlength']">
+                  Máximo 200 caracteres
+                </div>
+              </div>
+
+              <!-- Descripción -->
+              <div class="col-md-6 mb-3">
+                <label for="descripcion" class="form-label">
+                  Descripción <span class="text-danger">*</span>
+                </label>
+                <textarea id="descripcion" class="form-control" rows="3"
+                          formControlName="descripcion"
+                          placeholder="Describe el propósito del evento, actividades, etc."
+                          [class.is-invalid]="descripcion?.invalid && descripcion?.touched"></textarea>
+                <div class="invalid-feedback" *ngIf="descripcion?.errors?.['required']">
+                  La descripción es requerida
+                </div>
+                <div class="invalid-feedback" *ngIf="descripcion?.errors?.['minlength']">
+                  Mínimo 10 caracteres
+                </div>
+                <div class="invalid-feedback" *ngIf="descripcion?.errors?.['maxlength']">
+                  Máximo 500 caracteres
+                </div>
+                <small class="text-muted">{{ descripcion?.value?.length || 0 }}/500 caracteres</small>
+              </div>
+
+              <!-- Fecha del Evento -->
+              <div class="col-md-4 mb-3">
+                <label for="fechaEvento" class="form-label">
+                  Fecha del Evento <span class="text-danger">*</span>
+                </label>
+                <input type="date" id="fechaEvento" class="form-control"
+                       formControlName="fechaEvento"
+                       [min]="minDate"
+                       [max]="maxDate"
+                       [class.is-invalid]="fechaEvento?.invalid && fechaEvento?.touched">
+                <div class="invalid-feedback" *ngIf="fechaEvento?.errors?.['required']">
+                  La fecha es requerida
+                </div>
+                <div class="invalid-feedback" *ngIf="fechaEvento?.errors?.['fechaMinima']">
+                  La fecha debe ser al menos 2 semanas adelante (mínimo {{minDate | date:'dd/MM/yyyy'}})
+                </div>
+                <small class="text-muted">Rango: {{minDate | date:'dd/MM/yyyy'}} - {{maxDate | date:'dd/MM/yyyy'}}</small>
+              </div>
+
+              <!-- Hora Inicio -->
+              <div class="col-md-4 mb-3">
+                <label for="horaInicio" class="form-label">
+                  Hora de Inicio <span class="text-danger">*</span>
+                </label>
+                <input type="time" id="horaInicio" class="form-control"
+                       formControlName="horaInicio"
+                       min="08:00" max="20:00" step="1800"
+                       [class.is-invalid]="horaInicio?.invalid && horaInicio?.touched">
+                <div class="invalid-feedback" *ngIf="horaInicio?.errors?.['required']">
+                  La hora de inicio es requerida
+                </div>
+                <div class="invalid-feedback" *ngIf="horaInicio?.errors?.['horaFueraRango'] || horaInicio?.errors?.['formatoHoraInvalido']">
+                  Horario permitido: 8:00 AM - 8:00 PM
+                </div>
+                <small class="text-muted">Horario: 8:00 AM - 8:00 PM</small>
+              </div>
+
+              <!-- Hora Fin -->
+              <div class="col-md-4 mb-3">
+                <label for="horaFin" class="form-label">
+                  Hora de Fin <span class="text-danger">*</span>
+                </label>
+                <input type="time" id="horaFin" class="form-control"
+                       formControlName="horaFin"
+                       min="08:00" max="20:00" step="1800"
+                       [class.is-invalid]="horaFin?.invalid && horaFin?.touched">
+                <div class="invalid-feedback" *ngIf="horaFin?.errors?.['required']">
+                  La hora de fin es requerida
+                </div>
+                <div class="invalid-feedback" *ngIf="horaFin?.errors?.['horaFueraRango'] || horaFin?.errors?.['formatoHoraInvalido']">
+                  Horario permitido: 8:00 AM - 8:00 PM
+                </div>
+                <small class="text-muted">Debe ser posterior a la hora de inicio</small>
+              </div>
+
+              <!-- Validación cruzada de horas -->
+              <div *ngIf="eventoForm.hasError('horaFinAnterior')" class="col-12">
+                <div class="alert alert-danger">
+                  <i class="fas fa-exclamation-circle me-2"></i>
+                  La hora de fin debe ser posterior a la hora de inicio
+                </div>
+              </div>
+
+              <!-- Número de Asistentes -->
+              <div class="col-md-4 mb-3">
+                <label for="numeroAsistentes" class="form-label">
+                  Número de Asistentes <span class="text-danger">*</span>
+                </label>
+                <input type="number" id="numeroAsistentes" class="form-control"
+                       formControlName="numeroAsistentes" min="1" max="500"
+                       [class.is-invalid]="numeroAsistentes?.invalid && numeroAsistentes?.touched">
+                <div class="invalid-feedback" *ngIf="numeroAsistentes?.errors?.['required']">
+                  El número de asistentes es requerido
+                </div>
+                <div class="invalid-feedback" *ngIf="numeroAsistentes?.errors?.['min']">
+                  Mínimo 1 asistente
+                </div>
+                <div class="invalid-feedback" *ngIf="numeroAsistentes?.errors?.['max']">
+                  Máximo 500 asistentes
+                </div>
+              </div>
+
+              <!-- Tipo de Disposición -->
+              <div class="col-md-4 mb-3">
+                <label for="tipoDisposicion" class="form-label">
+                  Tipo de Disposición <span class="text-danger">*</span>
+                </label>
+                <select id="tipoDisposicion" class="form-select"
+                        formControlName="tipoDisposicion"
+                        [class.is-invalid]="tipoDisposicion?.invalid && tipoDisposicion?.touched">
+                  <option value="AULA">Aula (mesas individuales)</option>
+                  <option value="TEATRO">Teatro (solo sillas)</option>
+                  <option value="CONFERENCIA">Conferencia (mesa principal + sillas)</option>
+                  <option value="U">En U (mesas en forma de U)</option>
+                  <option value="CABALLERO">Caballero (mesas paralelas)</option>
+                  <option value="CIRCULO">Círculo (mesas en círculo)</option>
+                </select>
+                <div class="invalid-feedback" *ngIf="tipoDisposicion?.errors?.['required']">
+                  El tipo de disposición es requerido
+                </div>
+              </div>
+
+              <!-- Opciones Adicionales -->
+              <div class="col-md-4 mb-3">
+                <div class="form-label">Opciones Adicionales</div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="publicoExterno"
+                         formControlName="publicoExterno">
+                  <label class="form-check-label" for="publicoExterno">
+                    Público Externo
+                  </label>
+                  <small class="d-block text-muted">El evento es abierto al público general</small>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="requiereRegistroPrevio"
+                         formControlName="requiereRegistroPrevio">
+                  <label class="form-check-label" for="requiereRegistroPrevio">
+                    Requiere Registro Previo
+                  </label>
+                  <small class="d-block text-muted">Los asistentes deben registrarse antes</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 2: RESPONSABLE DEL EVENTO -->
+            <!-- IMPORTANTE: Usar formGroupName para el nested form group -->
+            <div formGroupName="responsable" class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fas fa-user-tie me-2 text-primary"></i>
+                  Información del Responsable
+                </h5>
+              </div>
+
+              <!-- Nombre del Responsable -->
+              <div class="col-md-4 mb-3">
+                <label for="responsableNombre" class="form-label">
+                  Nombre del Responsable <span class="text-danger">*</span>
+                </label>
+                <input type="text" id="responsableNombre" class="form-control"
+                       formControlName="nombre"
+                       placeholder="Nombre completo"
+                       [class.is-invalid]="responsableNombre?.invalid && responsableNombre?.touched">
+                <div class="invalid-feedback" *ngIf="responsableNombre?.errors?.['required']">
+                  El nombre del responsable es requerido
+                </div>
+                <div class="invalid-feedback" *ngIf="responsableNombre?.errors?.['minlength']">
+                  Mínimo 3 caracteres
+                </div>
+              </div>
+
+              <!-- Correo del Responsable -->
+              <div class="col-md-4 mb-3">
+                <label for="responsableCorreo" class="form-label">
+                  Correo Electrónico <span class="text-danger">*</span>
+                </label>
+                <input type="email" id="responsableCorreo" class="form-control"
+                       formControlName="correo"
+                       placeholder="ejemplo@unibe.edu.ec"
+                       [class.is-invalid]="responsableCorreo?.invalid && responsableCorreo?.touched">
+                <div class="invalid-feedback" *ngIf="responsableCorreo?.errors?.['required']">
+                  El correo electrónico es requerido
+                </div>
+                <div class="invalid-feedback" *ngIf="responsableCorreo?.errors?.['email']">
+                  Ingrese un correo electrónico válido
+                </div>
+              </div>
+
+              <!-- Teléfono del Responsable -->
+              <div class="col-md-4 mb-3">
+                <label for="responsableTelefono" class="form-label">
+                  Teléfono <span class="text-danger">*</span>
+                </label>
+                <input type="tel" id="responsableTelefono" class="form-control"
+                       formControlName="telefono"
+                       placeholder="0987654321"
+                       [class.is-invalid]="responsableTelefono?.invalid && responsableTelefono?.touched">
+                <div class="invalid-feedback" *ngIf="responsableTelefono?.errors?.['required']">
+                  El teléfono es requerido
+                </div>
+                <div class="invalid-feedback" *ngIf="responsableTelefono?.errors?.['pattern']">
+                  Ingrese 10 dígitos (ej: 0987654321)
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 3: REQUERIMIENTOS TÉCNICOS -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fas fa-tools me-2 text-primary"></i>
+                  Requerimientos Técnicos
+                </h5>
+                <p class="text-muted">
+                  Seleccione los equipos y recursos necesarios para su evento
+                </p>
+              </div>
+
+              <!-- Lista de Requerimientos -->
+              <div class="col-12 mb-3" formArrayName="requerimientos">
+                <div *ngFor="let requerimiento of requerimientos.controls; let i = index" 
+                     [formGroupName]="i" class="card mb-2">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-md-4">
+                        <label class="form-label">Tipo de Equipo</label>
+                        <select class="form-select" formControlName="tipo"
+                                [class.is-invalid]="requerimientos.at(i).get('tipo')?.invalid && requerimientos.at(i).get('tipo')?.touched">
+                          <option value="">Seleccione un equipo</option>
+                          <option *ngFor="let tipo of tiposRequerimiento" [value]="tipo">
+                            {{ tipo }}
+                          </option>
+                        </select>
+                        <div *ngIf="requerimientos.at(i).get('tipo')?.invalid && requerimientos.at(i).get('tipo')?.touched" 
+                             class="invalid-feedback d-block">
+                          Tipo de equipo es requerido
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" min="1" formControlName="cantidad"
+                               [class.is-invalid]="requerimientos.at(i).get('cantidad')?.invalid && requerimientos.at(i).get('cantidad')?.touched">
+                        <div *ngIf="requerimientos.at(i).get('cantidad')?.invalid && requerimientos.at(i).get('cantidad')?.touched" 
+                             class="invalid-feedback d-block">
+                          Cantidad mínima: 1
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-3">
+                        <div class="form-check mt-4">
+                          <input class="form-check-input" type="checkbox" 
+                                 id="requerido{{i}}" formControlName="requerido">
+                          <label class="form-check-label" for="requerido{{i}}">
+                            Requerido
+                          </label>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-danger btn-sm mt-3"
+                                (click)="eliminarRequerimiento(i)">
+                          <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botón para agregar requerimiento -->
+                <button type="button" class="btn btn-outline-primary btn-sm mb-3"
+                        (click)="agregarRequerimiento()">
+                  <i class="fas fa-plus me-1"></i> Agregar Requerimiento
+                </button>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 4: DISPONIBILIDAD Y BOTONES -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fas fa-calendar-check me-2 text-primary"></i>
+                  Verificación de Disponibilidad
+                </h5>
+              </div>
+
+              <!-- Botón para verificar disponibilidad -->
+              <div class="col-md-6 mb-3">
+                <div class="d-grid gap-2">
+                  <button type="button" class="btn btn-outline-info"
+                          (click)="verificarDisponibilidad()"
+                          [disabled]="!fechaEvento?.value || !horaInicio?.value || !horaFin?.value || eventoForm.invalid">
+                    <i class="fas fa-search me-2"></i>
+                    Verificar Disponibilidad del Horario
+                  </button>
+                  
+                  <!-- Resultado de disponibilidad -->
+                  <div *ngIf="disponibilidadVerificada" class="alert mt-3" 
+                       [class.alert-success]="disponible" 
+                       [class.alert-danger]="!disponible">
+                    <i class="fas" [class.fa-check-circle]="disponible" [class.fa-times-circle]="!disponible"></i>
+                    {{ disponible ? '¡Horario disponible!' : 'Horario no disponible' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Información de política -->
+              <div class="col-md-6 mb-3">
+                <div class="card border-warning">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                      Política de Reservas
+                    </h6>
+                    <ul class="small mb-0">
+                      <li>Anticipación mínima: <strong>2 semanas</strong></li>
+                      <li>Horario permitido: <strong>8:00 AM - 8:00 PM</strong></li>
+                      <li>Duración máxima: <strong>8 horas</strong></li>
+                      <li>Capacidad máxima: <strong>500 personas</strong></li>
+                      <li>Todas las reservas requieren aprobación</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="row">
+              <div class="col-12">
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary" (click)="cancelar()">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                  </button>
+                  
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary"
+                            (click)="router.navigate(['/eventos/calendario'])">
+                      <i class="fas fa-calendar-alt me-1"></i> Ver Calendario
+                    </button>
+                    
+                    <button type="submit" class="btn btn-primary"
+                            [disabled]="eventoForm.invalid || loading">
+                      <i class="fas" [class.fa-save]="isEditMode" [class.fa-paper-plane]="!isEditMode"></i>
+                      {{ isEditMode ? 'Actualizar Evento' : 'Enviar Solicitud de Reserva' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <div class="card-footer bg-light">
+          <div class="row">
+            <div class="col-md-6">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Estado inicial: <span class="badge bg-warning">Pendiente de Aprobación</span>
+              </small>
+            </div>
+            <div class="col-md-6 text-end">
+              <small class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                Tiempo de respuesta: 3-5 días hábiles
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,198 @@
+:host {
+  display: block;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  
+  .card-header {
+    border-radius: 12px 12px 0 0 !important;
+    padding: 1.5rem;
+    
+    h3 {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  .card-body {
+    padding: 2rem;
+  }
+  
+  .card-footer {
+    border-radius: 0 0 12px 12px;
+    padding: 1rem 1.5rem;
+  }
+}
+
+h5 {
+  color: #2c3e50;
+  font-weight: 600;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 2px;
+  }
+}
+
+.border-bottom {
+  border-color: rgba(52, 152, 219, 0.2) !important;
+}
+
+// Badges
+.badge {
+  padding: 0.5em 0.8em;
+  font-weight: 600;
+  border-radius: 20px;
+  
+  &.badge-success {
+    background: linear-gradient(135deg, #198754, #157347) !important;
+  }
+  
+  &.badge-warning {
+    background: linear-gradient(135deg, #ffc107, #ff9800) !important;
+    color: #212529;
+  }
+  
+  &.badge-danger {
+    background: linear-gradient(135deg, #dc3545, #bb2d3b) !important;
+  }
+  
+  &.badge-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+  }
+  
+  &.badge-info {
+    background: linear-gradient(135deg, #0dcaf0, #0baccc) !important;
+  }
+  
+  &.bg-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+  }
+  
+  &.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+  }
+}
+
+// Botones
+.btn {
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+    
+    &:hover {
+      background-color: #6c757d;
+      color: white;
+    }
+  }
+  
+  &.btn-warning {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    border: none;
+    color: #212529;
+    
+    &:hover {
+      background: linear-gradient(135deg, #ff9800, #ffc107);
+    }
+  }
+  
+  &.btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+    }
+  }
+  
+  &.btn-success {
+    background: linear-gradient(135deg, #28a745, #218838);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, #218838, #28a745);
+    }
+  }
+}
+
+// Alerts
+.alert {
+  border-radius: 10px;
+  border: none;
+  padding: 1rem 1.5rem;
+  
+  &.alert-danger {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #842029;
+    border-left: 4px solid #dc3545;
+  }
+  
+  &.alert-warning {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #664d03;
+    border-left: 4px solid #ffc107;
+  }
+  
+  &.alert-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+    border-left: 4px solid #0dcaf0;
+  }
+}
+
+// Spinner
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3em;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  h5 {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .d-flex {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .row {
+    > [class*="col-"] {
+      margin-bottom: 1rem;
+    }
+  }
+}

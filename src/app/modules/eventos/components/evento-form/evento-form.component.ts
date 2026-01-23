@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventoService } from "../../../../core/services/evento.service";
 import { AuthService } from '../../../../core/services/auth.service';
-import { EventoAuditorio, TipoRequerimiento } from '../../../../core/models/model';
+import { EventoAuditorio, TipoRequerimiento, EstadoEvento } from '../../../../core/models/model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -21,8 +21,12 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   disponible = false;
   minDate: string;
   maxDate: string;
-  formErrors: any = {}; // AÑADE ESTA LÍNEA
+  formErrors: any = {}; 
   private subscriptions: Subscription = new Subscription();
+  
+  // Nueva propiedad para controlar si se puede editar
+  puedeEditar = true;
+  mensajeNoEditable = '';
 
   constructor(
     private fb: FormBuilder,
@@ -66,7 +70,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       numeroAsistentes: [1, [Validators.required, Validators.min(1), Validators.max(500)]],
       publicoExterno: [false],
       requiereRegistroPrevio: [false],
-      tipoDisposicion: ['AULA', Validators.required],
+      tipoDisposicion: ['TEATRO', Validators.required],
       responsable: this.fb.group({
         nombre: ['', [Validators.required, Validators.minLength(3)]],
         correo: ['', [Validators.required, Validators.email]],
@@ -145,7 +149,15 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     this.loading = true;
     const eventoSub = this.eventoService.obtenerEventoPorId(this.eventoId).subscribe({
       next: (evento) => {
-        this.patchFormWithEvento(evento);
+        // Verificar si el evento puede ser editado (debe faltar más de 14 días)
+        this.verificarSiPuedeEditar(evento);
+        
+        if (this.puedeEditar) {
+          this.patchFormWithEvento(evento);
+        } else {
+          // Deshabilitar el formulario
+          this.eventoForm.disable();
+        }
       },
       error: (err) => {
         console.error('Error cargando evento:', err);
@@ -155,6 +167,45 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       complete: () => this.loading = false
     });
     this.subscriptions.add(eventoSub);
+  }
+
+  /**
+   * NUEVO: Verifica si el evento puede ser editado
+   * Solo se puede editar si faltan más de 14 días para el evento
+   */
+  private verificarSiPuedeEditar(evento: EventoAuditorio): void {
+    // Admin siempre puede editar
+    if (this.authService.isAdmin()) {
+      this.puedeEditar = true;
+      return;
+    }
+
+    // Eventos aprobados, completados o cancelados no se pueden editar por usuarios normales
+    if (evento.estado === EstadoEvento.APROBADO || 
+        evento.estado === EstadoEvento.COMPLETADO || 
+        evento.estado === EstadoEvento.CANCELADO) {
+      this.puedeEditar = false;
+      this.mensajeNoEditable = 'No se puede editar un evento en estado ' + evento.estado.toLowerCase();
+      return;
+    }
+
+    // Verificar si la fecha del evento está dentro de las próximas 2 semanas
+    const fechaEvento = typeof evento.fechaEvento === 'string' 
+      ? new Date(evento.fechaEvento) 
+      : evento.fechaEvento;
+    
+    const hoy = new Date();
+    const limite14Dias = new Date();
+    limite14Dias.setDate(hoy.getDate() + 14);
+    
+    fechaEvento.setHours(0, 0, 0, 0);
+    limite14Dias.setHours(0, 0, 0, 0);
+    
+    if (fechaEvento < limite14Dias) {
+      this.puedeEditar = false;
+      const diasRestantes = Math.ceil((fechaEvento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+      this.mensajeNoEditable = `No se puede editar este evento porque faltan solo ${diasRestantes} días. Se requieren mínimo 14 días de anticipación para realizar cambios.`;
+    }
   }
 
   private patchFormWithEvento(evento: EventoAuditorio): void {
@@ -216,10 +267,13 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * ACTUALIZADO: Calcula la fecha mínima (14 días desde hoy)
+   */
   getFechaMinima(): string {
     const hoy = new Date();
     const fechaMinima = new Date();
-    fechaMinima.setDate(hoy.getDate() + 14);
+    fechaMinima.setDate(hoy.getDate() + 14); // 14 días de anticipación
     return fechaMinima.toISOString().split('T')[0];
   }
 
@@ -232,7 +286,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
 
   verificarDisponibilidad(): void {
     if (this.eventoForm.get('fechaEvento')?.invalid) {
-      alert('Por favor, seleccione una fecha válida (mínimo 2 semanas adelante)');
+      alert('Por favor, seleccione una fecha válida (mínimo 14 días de anticipación desde hoy)');
       return;
     }
 
@@ -258,9 +312,11 @@ export class EventoFormComponent implements OnInit, OnDestroy {
         this.disponibilidadVerificada = true;
         this.disponible = disponible;
         if (disponible) {
-          alert('¡Horario disponible! Puede proceder con la solicitud.');
+          alert('✅ ¡Horario disponible! No hay conflictos con eventos aprobados ni pendientes. Puede proceder con la solicitud.');
         } else {
-          alert('El auditorio no está disponible en ese horario. Por favor, seleccione otro horario.');
+          alert('❌ El auditorio NO está disponible en ese horario.\n\n' +
+                'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
+                '📅 Seleccione otra fecha u horario diferente.');
         }
       },
       error: (err) => {
@@ -274,9 +330,15 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    // Verificar si puede editar (en modo edición)
+    if (this.isEditMode && !this.puedeEditar) {
+      alert(this.mensajeNoEditable);
+      return;
+    }
+
     if (this.eventoForm.invalid) {
       this.markAllAsTouched();
-      alert('Por favor complete todos los campos requeridos correctamente');
+      alert('Por favor complete todos los campos requeridos correctamente. Recuerde que la fecha debe ser con mínimo 14 días de anticipación.');
       return;
     }
 
@@ -301,8 +363,18 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       }
     }
 
+    // NUEVA VALIDACIÓN: Verificar que el horario esté disponible
+    if (!this.isEditMode && this.disponibilidadVerificada && !this.disponible) {
+      alert('❌ No puede enviar la reserva porque el horario NO está disponible.\n\n' +
+            'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
+            'Por favor, seleccione otra fecha u horario.');
+      return;
+    }
+
     if (!this.isEditMode && !this.disponibilidadVerificada) {
-      const confirmar = confirm('Recomendamos verificar la disponibilidad antes de enviar. ¿Desea continuar sin verificar?');
+      const confirmar = confirm('⚠️ No ha verificado la disponibilidad del horario.\n\n' +
+                                'Recomendamos verificar antes de enviar para asegurar que no hay conflictos.\n\n' +
+                                '¿Desea continuar sin verificar?');
       if (!confirmar) return;
     }
 
@@ -317,7 +389,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       next: (response) => {
         const mensaje = this.isEditMode 
           ? 'Evento actualizado correctamente'
-          : 'Solicitud de reserva enviada. Recibirá una confirmación por correo electrónico.';
+          : 'Solicitud de reserva enviada exitosamente. La universidad revisará su solicitud en los próximos días y recibirá una confirmación por correo electrónico.';
         
         alert(mensaje);
         this.router.navigate(['/eventos']);
@@ -402,11 +474,6 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       nombre: this.nombreEvento?.errors,
       descripcion: this.descripcion?.errors
     };
-    
-    console.log('DEBUG - Errores del formulario:', this.formErrors);
-    console.log('DEBUG - Fecha valor:', this.fechaEvento?.value);
-    console.log('DEBUG - Fecha válida?', this.fechaEvento?.valid);
-    console.log('DEBUG - Formulario válido?', this.eventoForm.valid);
   }
 
   // Getters para validación

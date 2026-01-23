@@ -169,14 +169,47 @@ export class EventoListComponent implements OnInit {
            evento.estado === EstadoEvento.APROBADO;
   }
 
+  /**
+   * MÉTODO CORREGIDO: Formatea fecha correctamente sin problemas de zona horaria
+   * Convierte string YYYY-MM-DD a fecha local sin ajuste de timezone
+   */
   formatearFecha(fecha: string | Date): string {
-    return new Date(fecha).toLocaleDateString('es-EC');
+    if (!fecha) return 'N/A';
+    
+    if (typeof fecha === 'string') {
+      // Si viene como string "YYYY-MM-DD", parsearlo manualmente
+      // para evitar problemas de zona horaria
+      const [year, month, day] = fecha.split('T')[0].split('-').map(Number);
+      const fechaLocal = new Date(year, month - 1, day);
+      return fechaLocal.toLocaleDateString('es-EC', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+    
+    return new Date(fecha).toLocaleDateString('es-EC', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   }
 
+  /**
+   * MÉTODO CORREGIDO: Formatea hora correctamente
+   */
   formatearHora(hora: string | Date): string {
+    if (!hora) return 'N/A';
+    
     if (typeof hora === 'string') {
+      // Si viene como "HH:mm:ss" o "HH:mm", tomar solo HH:mm
       return hora.substring(0, 5);
     }
-    return hora.toString().substring(0, 5);
+    
+    // Si es Date, extraer hora y minutos
+    const horaDate = new Date(hora);
+    const horas = horaDate.getHours().toString().padStart(2, '0');
+    const minutos = horaDate.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
   }
 }

@@ -187,12 +187,21 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     this.subscriptions.add(rechazarSub);
   }
 
-  // Método para formatear fecha
+  /**
+   * MÉTODO CORREGIDO: Formatea fecha correctamente sin problemas de zona horaria
+   * Parsea el string YYYY-MM-DD manualmente para evitar ajustes de timezone
+   */
   formatFecha(fecha: string | Date): string {
     if (!fecha) return 'N/A';
     
     if (typeof fecha === 'string') {
-      return new Date(fecha).toLocaleDateString('es-ES', {
+      // Extraer año, mes y día del string "YYYY-MM-DD"
+      const [year, month, day] = fecha.split('T')[0].split('-').map(Number);
+      
+      // Crear fecha local sin conversión de zona horaria
+      const fechaLocal = new Date(year, month - 1, day);
+      
+      return fechaLocal.toLocaleDateString('es-ES', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -200,7 +209,7 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
       });
     }
     
-    return fecha.toLocaleDateString('es-ES', {
+    return new Date(fecha).toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -208,18 +217,22 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Método para formatear hora
+  /**
+   * MÉTODO CORREGIDO: Formatea hora correctamente
+   * Extrae solo HH:mm del string o Date
+   */
   formatHora(hora: string | Date): string {
     if (!hora) return 'N/A';
     
     if (typeof hora === 'string') {
+      // Si viene como "HH:mm:ss" o "HH:mm", extraer solo HH:mm
       return hora.substring(0, 5);
     }
     
-    return hora.toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    // Si es Date, convertir a formato HH:mm
+    const horaDate = new Date(hora);
+    const horas = horaDate.getHours().toString().padStart(2, '0');
+    const minutos = horaDate.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
   }
 }

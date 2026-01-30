@@ -1,1 +1,153 @@
-<p>register works!</p>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-user-plus me-2"></i>
+                        {{ isAdminRegistration ? 'Registro de Administrador' : 'Registro de Usuario' }}
+                    </h4>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Solo mensaje de admin -->
+                    <div *ngIf="isAdminRegistration" class="alert alert-info mb-3">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Registro de Administrador</strong>
+                    </div>
+
+                    <!-- Mensajes -->
+                    <div *ngIf="message" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" (click)="message = ''"></button>
+                    </div>
+
+                    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+                        <button type="button" class="btn-close" (click)="error = ''"></button>
+                    </div>
+
+                    <!-- Formulario -->
+                    <form (ngSubmit)="register()" #registerForm="ngForm">
+                        <div class="row">
+                            <!-- Cédula -->
+                            <div class="col-md-6 mb-3">
+                                <label for="cedula" class="form-label">Cédula *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-id-card"></i>
+                                    </span>
+                                    <input type="text" id="cedula" class="form-control" 
+                                           [(ngModel)]="userData.username" name="username" required 
+                                           placeholder="1722570445" pattern="\d{10}"
+                                           minlength="10" maxlength="10">
+                                </div>
+                                <small class="form-text text-muted">10 dígitos numéricos</small>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">Teléfono *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input type="text" id="telefono" class="form-control" 
+                                           [(ngModel)]="userData.telefono" name="telefono" required 
+                                           placeholder="0991234567" pattern="\d{10}" 
+                                           minlength="10" maxlength="10">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Nombre -->
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" id="nombre" class="form-control" 
+                                           [(ngModel)]="userData.nombre" name="nombre" required 
+                                           placeholder="Ej: Bryan">
+                                </div>
+                            </div>
+
+                            <!-- Apellido -->
+                            <div class="col-md-6 mb-3">
+                                <label for="apellido" class="form-label">Apellido *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" id="apellido" class="form-control" 
+                                           [(ngModel)]="userData.apellido" name="apellido" required 
+                                           placeholder="Ej: Lopez">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Correo Institucional -->
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo Institucional *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" id="correo" class="form-control" 
+                                       [(ngModel)]="userData.correoInstitucional" name="correoInstitucional" required 
+                                       placeholder="....@unibe.edu.ec">
+                            </div>
+                            <small class="form-text text-muted">Debe terminar en &#64;unibe.edu.ec</small>
+                        </div>
+
+                        <div class="row">
+                            <!-- Contraseña -->
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Contraseña *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" id="password" class="form-control" 
+                                           [(ngModel)]="userData.password" name="password" required 
+                                           placeholder="Ingrese contraseña">
+                                </div>
+                            </div>
+
+                            <!-- Confirmar Contraseña -->
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" id="confirmPassword" class="form-control" 
+                                           [(ngModel)]="confirmPassword" name="confirmPassword" required 
+                                           placeholder="Repita la contraseña">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rol (oculto) -->
+                        <input type="hidden" [(ngModel)]="userData.role" name="role">
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="button" class="btn btn-secondary me-md-2" (click)="goToLogin()">
+                                <i class="fas fa-arrow-left me-2"></i> Volver
+                            </button>
+                            <button type="submit" class="btn btn-primary" 
+                                    [disabled]="loading || !registerForm.form.valid">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                                <i class="fas fa-user-plus me-2"></i>
+                                {{ isAdminRegistration ? 'Registrar Administrador' : 'Registrar Usuario' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

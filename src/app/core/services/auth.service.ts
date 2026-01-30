@@ -13,21 +13,25 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
-  
+
   private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   // ========== MÉTODOS DE AUTENTICACIÓN ==========
   setCurrentUser(user: User | null): void {
-  this.currentUserSubject.next(user);
-}
+    this.currentUserSubject.next(user);
+  }
   register(userData: AuthRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
+  }
+
+  registerAdmin(userData: AuthRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register-admin`, userData);
   }
 
   login(credentials: AuthRequest): Observable<AuthResponse> {
@@ -50,11 +54,11 @@ export class AuthService {
   }
 
   // ========== MÉTODOS DE VERIFICACIÓN ==========
-  
+
   isAuthenticated(): boolean {
     const token = this.getToken();
     if (!token) return false;
-    
+
     try {
       const decoded: DecodedToken = jwtDecode(token);
       return decoded.exp * 1000 > Date.now();
@@ -74,7 +78,7 @@ export class AuthService {
   }
 
   // ========== MÉTODOS DE OBTENCIÓN ==========
-  
+
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
@@ -84,7 +88,7 @@ export class AuthService {
   }
 
   // ========== MÉTODOS PRIVADOS ==========
-  
+
   private storeToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
   }
@@ -92,7 +96,7 @@ export class AuthService {
   private decodeToken(token: string): User {
     const decoded: DecodedToken = jwtDecode(token);
     const authorities = decoded.authorities || [];
-    
+
     // Determinar el rol principal
     let role = 'USER';
     if (authorities.includes('ROLE_ADMIN')) {
@@ -103,7 +107,12 @@ export class AuthService {
 
     return {
       username: decoded.sub,
-      role: role
+      role: role,
+      nombre: '',
+      apellido: '',
+      nombreCompleto: '',
+      correoInstitucional: '',
+      telefono: ''
     };
   }
 

@@ -10,8 +10,14 @@ import { AuthRequest } from '../../../../core/models/auth.model';
 })
 export class LoginComponent {
   credentials: AuthRequest = {
-    username: '',
-    password: ''
+    username: '',            // Cédula
+    password: '',            // Contraseña
+    // Los demás campos son opcionales para login
+    nombre: '',
+    apellido: '',
+    correoInstitucional: '',
+    telefono: '',
+    role: ''
   };
   loading = false;
   error = '';
@@ -30,7 +36,6 @@ export class LoginComponent {
     this.loading = true;
     this.error = '';
 
-    // Usar el authService para login real
     this.authService.login(this.credentials).subscribe({
       next: () => {
         // Login exitoso, redirigir a eventos

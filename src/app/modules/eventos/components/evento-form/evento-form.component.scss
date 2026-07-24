@@ -1,322 +1,909 @@
+$navy: #1c2544;
+$blue: #004990;
+$yellow: #fecc0d;
+$white: #fff;
+$muted: #667086;
+$border: #d6e0ea;
+$red: #b72f3b;
+$green: #237d47;
+
 :host {
-  display: block;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: block
 }
 
-// ===== ESTILOS GENERALES =====
-.card {
-  border: none;
-  border-radius: 12px;
-  
-  .card-header {
-    border-radius: 12px 12px 0 0 !important;
-    padding: 1.5rem;
-    
-    h3 {
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-  }
-  
-  .card-body {
-    padding: 2rem;
-  }
-  
-  .card-footer {
-    border-radius: 0 0 12px 12px;
-    padding: 1rem 1.5rem;
-  }
+.reservation-form-page {
+    max-width: 1320px;
+    margin: auto;
+    color: $navy
 }
 
-// ===== SECCIONES DEL FORMULARIO =====
-h5 {
-  color: #2c3e50;
-  font-weight: 600;
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 50px;
-    height: 3px;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
-    border-radius: 2px;
-  }
+.page-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 20px;
+    padding: 24px 28px;
+    border-left: 6px solid $yellow;
+    border-radius: 15px;
+    background: linear-gradient(115deg, rgba($blue, .12), rgba($yellow, .14))
 }
 
-.border-bottom {
-  border-color: rgba(52, 152, 219, 0.2) !important;
+.eyebrow {
+    color: $blue;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase
 }
 
-// ===== FORM CONTROLS =====
-.form-label {
-  font-weight: 600;
-  color: #34495e;
-  margin-bottom: 0.5rem;
-  
-  .text-danger {
-    font-size: 1.2em;
-    vertical-align: middle;
-  }
+.page-hero h1 {
+    margin: 5px 0 7px;
+    font-size: clamp(30px, 3vw, 40px);
+    font-weight: 780;
+    letter-spacing: -1px
 }
 
-.form-control, .form-select {
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  transition: all 0.3s ease;
-  
-  &:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-  }
-  
-  &.is-invalid {
-    border-color: #e74c3c;
-    
-    &:focus {
-      box-shadow: 0 0 0 0.25rem rgba(231, 76, 60, 0.25);
-    }
-  }
+.page-hero p {
+    margin: 0;
+    color: $muted;
+    font-size: 15px
 }
 
-textarea.form-control {
-  min-height: 100px;
-  resize: vertical;
+.calendar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 15px;
+    border: 1px solid rgba($blue, .2);
+    border-radius: 9px;
+    background: rgba($white, .72);
+    color: $blue;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none
 }
 
-// ===== CHECKBOXES Y RADIOS =====
-.form-check {
-  margin-bottom: 0.5rem;
-  
-  .form-check-input {
-    margin-top: 0.25rem;
-    
-    &:checked {
-      background-color: #3498db;
-      border-color: #3498db;
-    }
-    
-    &:focus {
-      border-color: #3498db;
-      box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-    }
-  }
-  
-  .form-check-label {
-    font-weight: 500;
-    color: #2c3e50;
-  }
+.form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 285px;
+    gap: 20px
 }
 
-// ===== REQUERIMIENTOS =====
-.card.requerimiento-card {
-  border: 2px solid #f1f8ff;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    border-color: #3498db;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
-  }
-  
-  .card-body {
-    padding: 1rem;
-  }
+.form-content {
+    display: grid;
+    gap: 18px
 }
 
-// ===== BOTONES =====
-.btn {
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-  
-  &.btn-primary {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    border: none;
-    
-    &:hover {
-      background: linear-gradient(135deg, #2980b9, #3498db);
-    }
-  }
-  
-  &.btn-outline-primary {
-    color: #3498db;
-    border-color: #3498db;
-    
-    &:hover {
-      background-color: #3498db;
-      color: white;
-    }
-  }
-  
-  &.btn-secondary {
-    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-    border: none;
-    
-    &:hover {
-      background: linear-gradient(135deg, #7f8c8d, #95a5a6);
-    }
-  }
-  
-  &.btn-outline-info {
-    color: #17a2b8;
-    border-color: #17a2b8;
-    
-    &:hover {
-      background-color: #17a2b8;
-      color: white;
-    }
-  }
-  
-  &.btn-danger {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    border: none;
-    
-    &:hover {
-      background: linear-gradient(135deg, #c0392b, #e74c3c);
-    }
-  }
+.form-section {
+    padding: 25px;
+    border: 1px solid $border;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #f9fcff, #eef5fb);
+    box-shadow: 0 6px 18px rgba($navy, .045)
 }
 
-// ===== ALERTS =====
-.alert {
-  border-radius: 10px;
-  border: none;
-  padding: 1rem 1.5rem;
-  
-  &.alert-success {
-    background: linear-gradient(135deg, #d1e7dd, #a3cfbb);
-    color: #0f5132;
-    border-left: 4px solid #198754;
-  }
-  
-  &.alert-danger {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    color: #842029;
-    border-left: 4px solid #dc3545;
-  }
-  
-  &.alert-warning {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-    color: #664d03;
-    border-left: 4px solid #ffc107;
-  }
+.form-section--schedule {
+    background: linear-gradient(145deg, #f5faff, #e7f1f9)
 }
 
-// ===== BADGES =====
-.badge {
-  padding: 0.5em 0.8em;
-  font-weight: 600;
-  border-radius: 20px;
-  
-  &.bg-warning {
-    background: linear-gradient(135deg, #ffc107, #ff9800) !important;
-    color: #212529;
-  }
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 23px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid $border
 }
 
-// ===== SPINNER =====
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-  border-width: 0.3em;
+.section-heading>span {
+    display: grid;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 10px;
+    background: $blue;
+    color: $white;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 5px 12px rgba($blue, .2)
 }
 
-// ===== RESPONSIVE =====
-@media (max-width: 768px) {
-  .card-body {
-    padding: 1rem !important;
-  }
-  
-  h5 {
-    font-size: 1.25rem;
-  }
-  
-  .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-  
-  .form-control, .form-select {
-    padding: 0.5rem 0.75rem;
-  }
+.section-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 780
 }
 
-@media (max-width: 576px) {
-  .d-flex {
+.section-heading p {
+    margin: 3px 0 0;
+    color: $muted;
+    font-size: 13px
+}
+
+.section-heading--action>button {
+    margin-left: auto;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: $blue;
+    color: $white;
+    font-size: 11px;
+    font-weight: 750
+}
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px
+}
+
+.fields-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+}
+
+.form-field {
+    display: flex;
+    min-width: 0;
     flex-direction: column;
-    gap: 1rem;
-    
-    > * {
-      width: 100%;
-    }
-  }
-  
-  .row {
-    > [class*="col-"] {
-      margin-bottom: 1rem;
-    }
-  }
+    gap: 7px
 }
 
-// ===== ANIMACIONES =====
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.form-field--wide {
+    grid-column: 1/-1
 }
 
-form {
-  animation: fadeIn 0.5s ease-out;
+.form-field label,
+.label-row label {
+    font-size: 13px;
+    font-weight: 750
 }
 
-// ===== UTILIDADES =====
-.text-muted {
-  font-size: 0.875rem;
-  opacity: 0.8;
+.form-field label em {
+    color: $red;
+    font-style: normal
 }
 
-.invalid-feedback {
-  font-weight: 500;
-  margin-top: 0.25rem;
+.form-field label small {
+    margin-left: 4px;
+    color: $muted;
+    font-size: 10px
 }
 
-// ===== TOOLTIPS =====
-[title] {
-  position: relative;
-  
-  &:hover::after {
-    content: attr(title);
+.label-row {
+    display: flex;
+    justify-content: space-between
+}
+
+.label-row small,
+.form-field>small {
+    color: $muted;
+    font-size: 11px
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 13px;
+    border: 1px solid $border;
+    border-radius: 9px;
+    outline: 0;
+    background: #fbfdff;
+    color: $navy;
+    font: inherit;
+    font-size: 13px;
+    transition: .2s
+}
+
+.form-field textarea {
+    min-height: 105px;
+    padding-block: 12px;
+    resize: vertical
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: $blue;
+    background: $white;
+    box-shadow: 0 0 0 4px rgba($blue, .09)
+}
+
+.form-field .invalid {
+    border-color: $red;
+    background: #fff7f8
+}
+
+.field-error {
+    color: $red;
+    font-size: 11px
+}
+
+.input-with-icon {
+    position: relative
+}
+
+.input-with-icon i {
     position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #2c3e50;
-    color: white;
-    padding: 0.5rem 1rem;
+    top: 50%;
+    left: 14px;
+    color: $blue;
+    transform: translateY(-50%)
+}
+
+.input-with-icon input {
+    padding-left: 40px
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 21px
+}
+
+.option-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 14px;
+    border: 1px solid $border;
+    border-radius: 10px;
+    background: rgba($white, .67);
+    cursor: pointer
+}
+
+.option-card>input {
+    position: absolute;
+    opacity: 0
+}
+
+.check-box {
+    display: grid;
+    flex: 0 0 auto;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border: 2px solid #aeb9c8;
     border-radius: 6px;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    z-index: 1000;
-    margin-bottom: 0.5rem;
-  }
+    color: transparent
+}
+
+.option-card>input:checked+.check-box {
+    border-color: $blue;
+    background: $blue;
+    color: $white
+}
+
+.option-card>span:last-child {
+    display: grid
+}
+
+.option-card strong {
+    font-size: 12px
+}
+
+.option-card small {
+    margin-top: 2px;
+    color: $muted;
+    font-size: 10px
+}
+
+.inline-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 12px
+}
+
+.inline-alert--error {
+    background: #fff0f1;
+    color: $red
+}
+
+.availability-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid rgba($blue, .16);
+    border-radius: 11px;
+    background: rgba($blue, .06)
+}
+
+.availability-box>div {
+    display: flex;
+    align-items: center;
+    gap: 11px
+}
+
+.availability-box>div>span {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 10px;
+    background: $blue;
+    color: $white
+}
+
+.availability-box h3 {
+    margin: 0;
+    font-size: 14px
+}
+
+.availability-box p {
+    margin: 3px 0 0;
+    color: $muted;
+    font-size: 11px
+}
+
+.availability-box button {
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 8px;
+    background: $blue;
+    color: $white;
+    font-size: 11px;
+    font-weight: 750
+}
+
+.availability-box button:disabled {
+    opacity: .48
+}
+
+.availability-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 9px;
+    font-size: 12px
+}
+
+.availability-result span {
+    display: grid
+}
+
+.availability-result--success {
+    background: #eaf8ef;
+    color: $green
+}
+
+.availability-result--error {
+    background: #fff0f1;
+    color: $red
+}
+
+.requirements-list {
+    display: grid;
+    gap: 10px
+}
+
+.requirements-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 25px;
+    border: 1px dashed #b8c7d6;
+    border-radius: 11px;
+    background: rgba($white, .45);
+    color: $muted
+}
+
+.requirements-empty i {
+    font-size: 22px
+}
+
+.requirements-empty span {
+    display: grid
+}
+
+.requirements-empty strong {
+    color: $navy;
+    font-size: 12px
+}
+
+.requirements-empty small {
+    font-size: 11px
+}
+
+.requirement-row {
+    display: grid;
+    grid-template-columns: 30px minmax(190px, 1fr) 125px 130px 34px;
+    align-items: end;
+    gap: 11px;
+    padding: 14px;
+    border: 1px solid $border;
+    border-radius: 11px;
+    background: #fafdff
+}
+
+.requirement-number {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    margin-bottom: 10px;
+    border-radius: 7px;
+    background: $yellow;
+    color: $navy;
+    font-size: 11px;
+    font-weight: 800
+}
+
+.required-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 48px;
+    font-size: 11px;
+    font-weight: 700
+}
+
+.required-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: $blue
+}
+
+.remove-button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    margin-bottom: 7px;
+    border: 1px solid #efc6ca;
+    border-radius: 8px;
+    background: #fff4f5;
+    color: $red
+}
+
+.form-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px
+}
+
+.sidebar-card {
+    padding: 19px;
+    border: 1px solid $border;
+    border-radius: 13px;
+    background: #eaf2f9
+}
+
+.sidebar-card--highlight {
+    border-top: 5px solid $yellow;
+    background: linear-gradient(145deg, $navy, $blue);
+    color: $white
+}
+
+.sidebar-icon {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    margin-bottom: 13px;
+    border-radius: 10px;
+    background: $yellow;
+    color: $navy
+}
+
+.sidebar-card h2 {
+    margin: 0 0 9px;
+    font-size: 15px
+}
+
+.sidebar-card p {
+    margin: 0;
+    color: $muted;
+    font-size: 11px;
+    line-height: 1.55
+}
+
+.sidebar-card--highlight p {
+    color: rgba($white, .68)
+}
+
+.sidebar-card ul {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none
+}
+
+.sidebar-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: $muted;
+    font-size: 11px
+}
+
+.sidebar-card li i {
+    margin-top: 2px;
+    color: $blue
+}
+
+.sidebar-card li strong {
+    color: $navy
+}
+
+.process-card>div {
+    display: flex;
+    gap: 9px;
+    margin-top: 12px
+}
+
+.process-card>div>span {
+    display: grid;
+    flex: 0 0 auto;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border-radius: 7px;
+    background: $yellow;
+    font-size: 9px;
+    font-weight: 800
+}
+
+.process-card p {
+    display: grid
+}
+
+.process-card p strong {
+    color: $navy
+}
+
+.sidebar-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 11px;
+    background: #fff5c9;
+    color: $navy
+}
+
+.sidebar-note i {
+    color: $blue
+}
+
+.sidebar-note span {
+    display: grid;
+    font-size: 10px
+}
+
+.sidebar-note strong {
+    font-size: 11px
+}
+
+.form-actions {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border: 1px solid $border;
+    border-radius: 13px;
+    background: linear-gradient(110deg, #dfeaf4, #fff5c9)
+}
+
+.form-actions>div {
+    display: flex;
+    gap: 9px
+}
+
+.button {
+    display: flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 750
+}
+
+.button--cancel,
+.button--calendar {
+    border: 1px solid $border;
+    background: #fafdff;
+    color: $navy
+}
+
+.button--submit {
+    border: 0;
+    background: $blue;
+    color: $white;
+    box-shadow: 0 7px 16px rgba($blue, .2)
+}
+
+.button:disabled {
+    opacity: .5
+}
+
+.loading-card {
+    display: grid;
+    min-height: 380px;
+    place-items: center;
+    align-content: center;
+    border-radius: 15px;
+    background: #eaf2f9;
+    text-align: center
+}
+
+.loading-card .spinner-border {
+    color: $blue
+}
+
+.loading-card h2 {
+    margin: 13px 0 0;
+    font-size: 18px
+}
+
+.loading-card p {
+    color: $muted
+}
+
+.page-alert {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 17px;
+    padding: 15px;
+    border-radius: 11px
+}
+
+.page-alert--warning {
+    background: #fff5c9;
+    color: #745900
+}
+
+.page-alert p {
+    margin: 2px 0 0;
+    font-size: 12px
+}
+
+@media(max-width:1050px) {
+    .form-layout {
+        grid-template-columns: 1fr
+    }
+
+    .form-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr)
+    }
+
+    .form-actions {
+        grid-column: auto
+    }
+}
+
+@media(max-width:750px) {
+    .page-hero {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .calendar-link {
+        align-self: flex-start
+    }
+
+    .fields-grid,
+    .fields-grid--three,
+    .options-grid {
+        grid-template-columns: 1fr
+    }
+
+    .form-field--wide {
+        grid-column: auto
+    }
+
+    .section-heading--action {
+        align-items: flex-start;
+        flex-wrap: wrap
+    }
+
+    .section-heading--action>button {
+        margin-left: 49px
+    }
+
+    .availability-box {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .requirement-row {
+        grid-template-columns: 30px 1fr 90px
+    }
+
+    .required-toggle {
+        grid-column: 2
+    }
+
+    .remove-button {
+        grid-column: 3;
+        grid-row: 2
+    }
+
+    .form-sidebar {
+        grid-template-columns: 1fr
+    }
+
+    .form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse
+    }
+
+    .form-actions>div {
+        display: grid;
+        grid-template-columns: 1fr 1fr
+    }
+
+    .button {
+        width: 100%
+    }
+}
+
+@media(max-width:480px) {
+
+    .page-hero,
+    .form-section {
+        padding: 19px 15px
+    }
+
+    .section-heading {
+        align-items: flex-start
+    }
+
+    .requirement-row {
+        grid-template-columns: 1fr
+    }
+
+    .requirement-number,
+    .required-toggle,
+    .remove-button {
+        grid-column: auto;
+        grid-row: auto
+    }
+
+    .form-actions>div {
+        grid-template-columns: 1fr
+    }
+}
+
+// Orden del proceso: información, responsable, recursos y disponibilidad
+.form-section--information {
+    order: 1
+}
+
+.form-section--responsible {
+    order: 2
+}
+
+.form-section--requirements {
+    order: 3
+}
+
+.form-section--schedule {
+    order: 4
+}
+
+// Textos auxiliares que el usuario debe poder leer sin esfuerzo
+.section-heading h2 {
+    font-size: 20px
+}
+
+.section-heading p {
+    font-size: 15px;
+    line-height: 1.5
+}
+
+.section-heading--action>button {
+    font-size: 13px
+}
+
+.form-field label,
+.label-row label {
+    font-size: 15px
+}
+
+.form-field label small {
+    font-size: 13px
+}
+
+.label-row small,
+.form-field>small {
+    font-size: 13px;
+    line-height: 1.45
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    font-size: 15px
+}
+
+.field-error {
+    font-size: 13px
+}
+
+.option-card strong {
+    font-size: 14px
+}
+
+.option-card small {
+    font-size: 13px;
+    line-height: 1.45
+}
+
+.inline-alert {
+    font-size: 14px
+}
+
+.availability-box h3 {
+    font-size: 16px
+}
+
+.availability-box p {
+    font-size: 13px;
+    line-height: 1.5
+}
+
+.availability-box button {
+    font-size: 13px
+}
+
+.availability-result {
+    font-size: 14px
+}
+
+.requirements-empty strong {
+    font-size: 14px
+}
+
+.requirements-empty small {
+    font-size: 13px
+}
+
+.required-toggle {
+    font-size: 13px
+}
+
+.sidebar-card h2 {
+    font-size: 17px
+}
+
+.sidebar-card p,
+.sidebar-card li {
+    font-size: 13px;
+    line-height: 1.5
+}
+
+.sidebar-note span {
+    font-size: 12px
+}
+
+.sidebar-note strong {
+    font-size: 13px
+}
+
+.button {
+    font-size: 14px
+}
+
+.page-alert p {
+    font-size: 14px
 }

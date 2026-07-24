@@ -19,6 +19,11 @@ const routes: Routes = [
     loadChildren: () => import('./modules/admin/admin.module').then(m => m.AdminModule),
     canActivate: [AuthGuard, AdminGuard]
   },
+  {
+    path: 'mi-cuenta',
+    loadChildren: () => import('./modules/cuenta/cuenta.module').then(m => m.CuentaModule),
+    canActivate: [AuthGuard]
+  },
   { path: '**', redirectTo: '/eventos' }
 ];
 

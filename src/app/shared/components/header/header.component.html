@@ -1,63 +1,101 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
-  <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/">
-      <i class="fas fa-university me-2"></i>
-      Auditorio UNIBE
-    </a>
-    
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/eventos" routerLinkActive="active">
-            <i class="fas fa-calendar-alt me-1"></i> Eventos
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/eventos/calendario" routerLinkActive="active">
-            <i class="fas fa-calendar me-1"></i> Calendario
-          </a>
-        </li>
-        
-        <!-- Enlaces para admin -->
-        <ng-container *ngIf="isAdmin">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/admin" routerLinkActive="active">
-              <i class="fas fa-cogs me-1"></i> Administración
-            </a>
+<header class="site-header">
+  <nav class="navbar navbar-expand-lg" aria-label="Navegación principal">
+    <div class="container-fluid">
+      <a class="navbar-brand" routerLink="/eventos/calendario" aria-label="UNIB.E - Inicio">
+        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
+          alt="Universidad Iberoamericana del Ecuador">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav navigation-links">
+          <li class="nav-item"><a class="nav-link" routerLink="/eventos/calendario" routerLinkActive="active"><i
+                class="far fa-calendar"></i> Calendario</a></li>
+          <li class="nav-item"><a class="nav-link" routerLink="/eventos" [routerLinkActiveOptions]="{exact: true}"
+              routerLinkActive="active"><i class="far fa-calendar-check"></i> {{ isAdmin ? 'Eventos' : 'Mis reservas'
+              }}</a></li>
+          <li class="nav-item dropdown" *ngIf="isAdmin">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i
+                class="fas fa-sliders"></i> Administración</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" routerLink="/admin/usuarios" routerLinkActive="active">Gestión de
+                  usuarios</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/tipos-requerimiento" routerLinkActive="active">Tipos de
+                  requerimiento</a></li>
+            </ul>
           </li>
-        </ng-container>
-      </ul>
-      
-      <!-- Usuario autenticado -->
-      <div *ngIf="isAuthenticated" class="navbar-nav">
-        <div class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="fas fa-user me-1"></i> {{ username }}
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" routerLink="/eventos">
-              <i class="fas fa-list me-2"></i> Mis eventos
-            </a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-danger" (click)="logout()" style="cursor: pointer;">
-                <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-              </a>
-            </li>
-          </ul>
+        </ul>
+
+        <div *ngIf="isAuthenticated" class="navbar-nav user-navigation">
+          <div class="notification-center">
+            <button type="button" class="notification-button" (click)="alternarNotificaciones($event)"
+              [attr.aria-expanded]="panelNotificacionesAbierto" aria-label="Abrir notificaciones">
+              <i class="far fa-bell" aria-hidden="true"></i>
+              <span *ngIf="cantidadNoLeidas > 0" class="notification-count">
+                {{ cantidadNoLeidas > 99 ? '99+' : cantidadNoLeidas }}
+              </span>
+            </button>
+
+            <section *ngIf="panelNotificacionesAbierto" class="notification-panel" (click)="$event.stopPropagation()">
+              <header>
+                <div>
+                  <strong>Notificaciones</strong>
+                  <small>{{ cantidadNoLeidas }} sin leer</small>
+                </div>
+                <button type="button" (click)="marcarTodasComoLeidas($event)" [disabled]="cantidadNoLeidas === 0">
+                  Marcar todas como leídas
+                </button>
+              </header>
+
+              <div *ngIf="cargandoNotificaciones" class="notification-state">
+                <span class="spinner-border spinner-border-sm"></span>
+                <p>Cargando notificaciones...</p>
+              </div>
+
+              <div *ngIf="!cargandoNotificaciones && notificaciones.length === 0" class="notification-state">
+                <i class="far fa-bell-slash"></i>
+                <strong>Sin notificaciones</strong>
+                <p>Los avisos sobre las reservas aparecerán aquí.</p>
+              </div>
+
+              <div *ngIf="!cargandoNotificaciones && notificaciones.length > 0" class="notification-list">
+                <button *ngFor="let notificacion of notificaciones | slice:0:8" type="button"
+                  class="notification-item" [class.unread]="!notificacion.leida"
+                  (click)="abrirNotificacion(notificacion)">
+                  <span class="notification-icon" [attr.data-type]="notificacion.tipo">
+                    <i class="fas" [ngClass]="iconoNotificacion(notificacion.tipo)"></i>
+                  </span>
+                  <span class="notification-content">
+                    <strong>{{ notificacion.titulo }}</strong>
+                    <span>{{ notificacion.mensaje }}</span>
+                    <small>{{ notificacion.creadaEn | date:'dd/MM/yyyy · HH:mm' }}</small>
+                  </span>
+                  <i *ngIf="!notificacion.leida" class="fas fa-circle unread-dot" aria-label="No leída"></i>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="nav-item dropdown">
+            <a class="user-button dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <span class="user-avatar">{{ (nombreCompleto || username).charAt(0).toUpperCase() }}</span>
+              <span class="user-data"><small>{{ isAdmin ? 'Administrador' : 'Usuario' }}</small><strong>{{ nombreCompleto || username }}</strong></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" routerLink="/mi-cuenta"><i class="fas fa-user"></i> Mi cuenta</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><button class="dropdown-item logout-button" type="button" (click)="logout()"><i
+                    class="fas fa-arrow-right-from-bracket"></i> Cerrar sesión</button></li>
+            </ul>
+          </div>
         </div>
       </div>
-      
-      <!-- Usuario no autenticado -->
-      <div *ngIf="!isAuthenticated" class="navbar-nav">
-        <a class="nav-link" routerLink="/auth/login">
-          <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
-        </a>
-      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>

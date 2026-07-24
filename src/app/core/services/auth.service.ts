@@ -26,6 +26,14 @@ export class AuthService {
   setCurrentUser(user: User | null): void {
     this.currentUserSubject.next(user);
   }
+
+  updateCurrentUser(changes: Partial<User>): void {
+    const current = this.currentUserSubject.value;
+    if (!current) return;
+    const updated = { ...current, ...changes };
+    this.storeUser(updated);
+    this.currentUserSubject.next(updated);
+  }
   register(userData: AuthRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
@@ -39,7 +47,19 @@ export class AuthService {
       .pipe(
         tap(response => {
           this.storeToken(response.token);
-          const user = this.decodeToken(response.token);
+          const tokenUser = this.decodeToken(response.token);
+          const user: User = {
+            ...tokenUser,
+            username: response.username || tokenUser.username,
+            role: response.role || tokenUser.role,
+            nombre: response.nombre || '',
+            apellido: response.apellido || '',
+            nombreCompleto: response.nombreCompleto || '',
+            correoInstitucional: response.correoInstitucional || '',
+            telefono: response.telefono || '',
+            activo: response.activo,
+            debeCambiarPassword: response.debeCambiarPassword
+          };
           this.storeUser(user);
           this.currentUserSubject.next(user);
         })

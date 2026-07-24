@@ -1,153 +1,167 @@
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0 text-center">
-                        <i class="fas fa-user-plus me-2"></i>
-                        {{ isAdminRegistration ? 'Registro de Administrador' : 'Registro de Usuario' }}
-                    </h4>
-                </div>
+<main class="register-page">
+  <section class="register-shell" aria-labelledby="register-title">
+    <header class="register-header">
+      <a routerLink="/auth/login" class="brand-link">
+        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
+          alt="Universidad Iberoamericana del Ecuador">
+      </a>
+      <div>
+        <span>{{ isAdminRegistration ? 'Gestión administrativa' : 'Sistema de Reservas' }}</span>
+        <h1 id="register-title">
+          {{ isAdminRegistration ? 'Registrar administrador' : 'Crear una cuenta' }}
+        </h1>
+        <p>Completa tus datos para acceder a la reserva del auditorio.</p>
+      </div>
+    </header>
 
-                <div class="card-body p-4">
-                    <!-- Solo mensaje de admin -->
-                    <div *ngIf="isAdminRegistration" class="alert alert-info mb-3">
-                        <i class="fas fa-shield-alt me-2"></i>
-                        <strong>Registro de Administrador</strong>
-                    </div>
+    <div class="register-body">
+      <div *ngIf="isAdminRegistration" class="notice notice--info">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        <div><strong>Registro administrativo</strong><span>Esta cuenta tendrá permisos de administración.</span></div>
+      </div>
 
-                    <!-- Mensajes -->
-                    <div *ngIf="message" class="alert alert-success alert-dismissible fade show">
-                        <i class="fas fa-check-circle me-2"></i> {{ message }}
-                        <button type="button" class="btn-close" (click)="message = ''"></button>
-                    </div>
+      <div *ngIf="message" class="notice notice--success" role="status">
+        <i class="fas fa-check-circle" aria-hidden="true"></i><span>{{ message }}</span>
+        <button type="button" (click)="message = ''" aria-label="Cerrar mensaje">&times;</button>
+      </div>
 
-                    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
-                        <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
-                        <button type="button" class="btn-close" (click)="error = ''"></button>
-                    </div>
+      <div *ngIf="error" class="notice notice--error" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i><span>{{ error }}</span>
+        <button type="button" (click)="error = ''" aria-label="Cerrar mensaje">&times;</button>
+      </div>
 
-                    <!-- Formulario -->
-                    <form (ngSubmit)="register()" #registerForm="ngForm">
-                        <div class="row">
-                            <!-- Cédula -->
-                            <div class="col-md-6 mb-3">
-                                <label for="cedula" class="form-label">Cédula *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-id-card"></i>
-                                    </span>
-                                    <input type="text" id="cedula" class="form-control" 
-                                           [(ngModel)]="userData.username" name="username" required 
-                                           placeholder="1722570445" pattern="\d{10}"
-                                           minlength="10" maxlength="10">
-                                </div>
-                                <small class="form-text text-muted">10 dígitos numéricos</small>
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="col-md-6 mb-3">
-                                <label for="telefono" class="form-label">Teléfono *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-phone"></i>
-                                    </span>
-                                    <input type="text" id="telefono" class="form-control" 
-                                           [(ngModel)]="userData.telefono" name="telefono" required 
-                                           placeholder="0991234567" pattern="\d{10}" 
-                                           minlength="10" maxlength="10">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Nombre -->
-                            <div class="col-md-6 mb-3">
-                                <label for="nombre" class="form-label">Nombre *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input type="text" id="nombre" class="form-control" 
-                                           [(ngModel)]="userData.nombre" name="nombre" required 
-                                           placeholder="Ej: Bryan">
-                                </div>
-                            </div>
-
-                            <!-- Apellido -->
-                            <div class="col-md-6 mb-3">
-                                <label for="apellido" class="form-label">Apellido *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input type="text" id="apellido" class="form-control" 
-                                           [(ngModel)]="userData.apellido" name="apellido" required 
-                                           placeholder="Ej: Lopez">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Correo Institucional -->
-                        <div class="mb-3">
-                            <label for="correo" class="form-label">Correo Institucional *</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-envelope"></i>
-                                </span>
-                                <input type="email" id="correo" class="form-control" 
-                                       [(ngModel)]="userData.correoInstitucional" name="correoInstitucional" required 
-                                       placeholder="....@unibe.edu.ec">
-                            </div>
-                            <small class="form-text text-muted">Debe terminar en &#64;unibe.edu.ec</small>
-                        </div>
-
-                        <div class="row">
-                            <!-- Contraseña -->
-                            <div class="col-md-6 mb-3">
-                                <label for="password" class="form-label">Contraseña *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
-                                    </span>
-                                    <input type="password" id="password" class="form-control" 
-                                           [(ngModel)]="userData.password" name="password" required 
-                                           placeholder="Ingrese contraseña">
-                                </div>
-                            </div>
-
-                            <!-- Confirmar Contraseña -->
-                            <div class="col-md-6 mb-3">
-                                <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
-                                    </span>
-                                    <input type="password" id="confirmPassword" class="form-control" 
-                                           [(ngModel)]="confirmPassword" name="confirmPassword" required 
-                                           placeholder="Repita la contraseña">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Rol (oculto) -->
-                        <input type="hidden" [(ngModel)]="userData.role" name="role">
-
-                        <!-- Botones -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="button" class="btn btn-secondary me-md-2" (click)="goToLogin()">
-                                <i class="fas fa-arrow-left me-2"></i> Volver
-                            </button>
-                            <button type="submit" class="btn btn-primary" 
-                                    [disabled]="loading || !registerForm.form.valid">
-                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                <i class="fas fa-user-plus me-2"></i>
-                                {{ isAdminRegistration ? 'Registrar Administrador' : 'Registrar Usuario' }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+      <form (ngSubmit)="register(registerForm)" #registerForm="ngForm" class="register-form">
+        <fieldset>
+          <legend><span>1</span> Información personal</legend>
+          <div class="fields-grid">
+            <div class="form-field">
+              <label for="cedula">Cédula <em>*</em></label>
+              <input type="text" id="cedula" [(ngModel)]="userData.username" name="username" #cedulaModel="ngModel"
+                required (input)="soloNumeros('username')" inputmode="numeric" autocomplete="off"
+                placeholder="Ej. 1722570445" pattern="\d{10}" minlength="10" maxlength="10"
+                [class.is-invalid]="cedulaModel.invalid && (cedulaModel.dirty || cedulaModel.touched)"
+                [class.is-valid]="cedulaModel.valid && cedulaModel.dirty">
+              <small *ngIf="cedulaModel.invalid && (cedulaModel.dirty || cedulaModel.touched)" class="field-error">La
+                cédula debe tener exactamente 10 números.</small>
+              <small *ngIf="cedulaModel.valid || !cedulaModel.dirty" class="field-hint">Ingresa los 10 dígitos, sin
+                letras ni guiones.</small>
             </div>
+
+            <div class="form-field">
+              <label for="telefono">Teléfono <em>*</em></label>
+              <input type="tel" id="telefono" [(ngModel)]="userData.telefono" name="telefono" #telefonoModel="ngModel"
+                required (input)="soloNumeros('telefono')" inputmode="numeric" autocomplete="tel"
+                placeholder="Ej. 0991234567" pattern="\d{10}" minlength="10" maxlength="10"
+                [class.is-invalid]="telefonoModel.invalid && (telefonoModel.dirty || telefonoModel.touched)"
+                [class.is-valid]="telefonoModel.valid && telefonoModel.dirty">
+              <small *ngIf="telefonoModel.invalid && (telefonoModel.dirty || telefonoModel.touched)"
+                class="field-error">El teléfono debe tener exactamente 10 números.</small>
+              <small *ngIf="telefonoModel.valid || !telefonoModel.dirty" class="field-hint">Escribe 10 números, sin
+                espacios ni guiones.</small>
+            </div>
+
+            <div class="form-field">
+              <label for="nombre">Nombre <em>*</em></label>
+              <input type="text" id="nombre" [(ngModel)]="userData.nombre" name="nombre" #nombreModel="ngModel" required
+                (input)="soloLetras('nombre')" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$"
+                autocomplete="given-name" placeholder="Ej. Bryan"
+                [class.is-invalid]="nombreModel.invalid && (nombreModel.dirty || nombreModel.touched)"
+                [class.is-valid]="nombreModel.valid && nombreModel.dirty">
+              <small *ngIf="nombreModel.invalid && (nombreModel.dirty || nombreModel.touched)"
+                class="field-error">Escribe al menos 2 letras; no utilices números.</small>
+              <small *ngIf="nombreModel.valid || !nombreModel.dirty" class="field-hint">Puedes utilizar tildes,
+                solo letras y sin espacios.</small>
+            </div>
+
+            <div class="form-field">
+              <label for="apellido">Apellido <em>*</em></label>
+              <input type="text" id="apellido" [(ngModel)]="userData.apellido" name="apellido" #apellidoModel="ngModel"
+                required (input)="soloLetras('apellido')" minlength="2" maxlength="100"
+                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$" autocomplete="family-name"
+                placeholder="Ej. López"
+                [class.is-invalid]="apellidoModel.invalid && (apellidoModel.dirty || apellidoModel.touched)"
+                [class.is-valid]="apellidoModel.valid && apellidoModel.dirty">
+              <small *ngIf="apellidoModel.invalid && (apellidoModel.dirty || apellidoModel.touched)"
+                class="field-error">Escribe al menos 2 letras; no utilices números.</small>
+              <small *ngIf="apellidoModel.valid || !apellidoModel.dirty" class="field-hint">Puedes utilizar tildes,
+                solo letras y sin espacios.</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>2</span> Datos de acceso</legend>
+          <div class="fields-grid">
+            <div class="form-field form-field--wide">
+              <label for="correo">Correo institucional <em>*</em></label>
+              <input type="email" id="correo" [(ngModel)]="userData.correoInstitucional" #correoModel="ngModel"
+                name="correoInstitucional" required email autocomplete="email" placeholder="usuario@ejemplo.com"
+                [class.is-invalid]="correoModel.invalid && (correoModel.dirty || correoModel.touched)"
+                [class.is-valid]="correoModel.valid && correoModel.dirty">
+              <small *ngIf="correoModel.invalid && (correoModel.dirty || correoModel.touched)"
+                class="field-error">Ingresa un correo válido, por ejemplo usuario&#64;ejemplo.com.</small>
+              <small *ngIf="correoModel.valid || !correoModel.dirty" class="field-hint">Ingresa un correo electrónico al
+                que tengas acceso.</small>
+            </div>
+
+            <div class="form-field">
+              <label for="password">Contraseña <em>*</em></label>
+              <div class="password-control">
+                <input [type]="mostrarPassword ? 'text' : 'password'" id="password" [(ngModel)]="userData.password"
+                  name="password" #passwordModel="ngModel" required minlength="8" maxlength="64"
+                  pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,64}$"
+                  autocomplete="new-password" placeholder="Crea una contraseña"
+                  [class.is-invalid]="passwordModel.invalid && (passwordModel.dirty || passwordModel.touched)"
+                  [class.is-valid]="passwordModel.valid && passwordModel.dirty">
+                <button type="button" (click)="alternarPassword()"
+                  [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                  <i class="fas" [ngClass]="mostrarPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+              <div class="password-rules" aria-live="polite">
+                <span [class.met]="passwordTieneLongitud()">8 caracteres</span>
+                <span [class.met]="passwordTieneMayuscula()">Una mayúscula</span>
+                <span [class.met]="passwordTieneMinuscula()">Una minúscula</span>
+                <span [class.met]="passwordTieneNumero()">Un número</span>
+                <span [class.met]="passwordTieneSimbolo()">Un símbolo</span>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="confirmPassword">Confirmar contraseña <em>*</em></label>
+              <div class="password-control">
+                <input [type]="mostrarConfirmPassword ? 'text' : 'password'" id="confirmPassword"
+                  [(ngModel)]="confirmPassword" name="confirmPassword" #confirmModel="ngModel" required minlength="8"
+                  maxlength="64" autocomplete="new-password" placeholder="Repite la contraseña"
+                  [class.is-invalid]="confirmModel.dirty && confirmPassword !== userData.password"
+                  [class.is-valid]="confirmModel.dirty && !!confirmPassword && confirmPassword === userData.password">
+                <button type="button" (click)="alternarConfirmPassword()"
+                  [attr.aria-label]="mostrarConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                  <i class="fas" [ngClass]="mostrarConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+              <small *ngIf="confirmModel.dirty && confirmPassword !== userData.password" class="field-error">Las
+                contraseñas todavía no coinciden.</small>
+              <small *ngIf="confirmModel.dirty && !!confirmPassword && confirmPassword === userData.password"
+                class="field-success">Las contraseñas coinciden.</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <input type="hidden" [(ngModel)]="userData.role" name="role">
+
+        <div class="form-actions">
+          <button type="button" class="button button--secondary" (click)="goToLogin()">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al acceso
+          </button>
+          <button type="submit" class="button button--primary"
+            [disabled]="loading || !registerForm.form.valid || confirmPassword !== userData.password">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span>{{ loading ? 'Registrando...' : (isAdminRegistration ? 'Registrar administrador' : 'Crear mi cuenta')
+              }}</span>
+          </button>
         </div>
+      </form>
     </div>
-</div>
+  </section>
+</main>

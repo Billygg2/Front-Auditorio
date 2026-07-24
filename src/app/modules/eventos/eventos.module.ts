@@ -11,6 +11,7 @@ import { CalendarViewComponent } from './components/calendar-view/calendar-view.
 
 // Módulo de rutas
 import { EventosRoutingModule } from './eventos-routing.module';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { EventosRoutingModule } from './eventos-routing.module';
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
+    SharedModule,
     EventosRoutingModule
   ]
 })

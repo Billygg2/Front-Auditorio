@@ -6,7 +6,7 @@ import { EventoDetailComponent } from './components/evento-detail/evento-detail.
 import { CalendarViewComponent } from './components/calendar-view/calendar-view.component';
 
 const routes: Routes = [
-  { path: '', component: EventoListComponent },
+  { path: '', component: EventoListComponent, pathMatch: 'full' },
   { path: 'nuevo', component: EventoFormComponent },
   { path: 'editar/:id', component: EventoFormComponent },
   { path: 'detalle/:id', component: EventoDetailComponent },

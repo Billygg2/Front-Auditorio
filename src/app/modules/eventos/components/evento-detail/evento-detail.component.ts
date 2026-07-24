@@ -47,10 +47,10 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     const eventoSub = this.eventoService.obtenerEventoPorId(+id).subscribe({
-      next: (evento) => {
+      next: (evento: EventoAuditorio) => {
         this.evento = evento;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error cargando evento:', err);
         this.error = 'Error cargando los detalles del evento';
         this.loading = false;
@@ -64,30 +64,36 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
 
   getEstadoBadgeClass(estado: EstadoEvento): string {
     switch (estado) {
-      case EstadoEvento.APROBADO:
-        return 'badge-success';
-      case EstadoEvento.PENDIENTE:
-        return 'badge-warning';
-      case EstadoEvento.RECHAZADO:
-        return 'badge-danger';
-      case EstadoEvento.CANCELADO:
-        return 'badge-secondary';
-      case EstadoEvento.COMPLETADO:
-        return 'badge-info';
-      default:
-        return 'badge-light';
+      case EstadoEvento.APROBADO:   return 'badge-success';
+      case EstadoEvento.PENDIENTE:  return 'badge-warning';
+      case EstadoEvento.RECHAZADO:  return 'badge-danger';
+      case EstadoEvento.CANCELADO:  return 'badge-secondary';
+      case EstadoEvento.COMPLETADO: return 'badge-info';
+      default:                      return 'badge-light';
     }
   }
 
   getEstadoText(estado: EstadoEvento): string {
     const estadoMap: Record<EstadoEvento, string> = {
-      [EstadoEvento.PENDIENTE]: 'Pendiente',
-      [EstadoEvento.APROBADO]: 'Aprobado',
-      [EstadoEvento.RECHAZADO]: 'Rechazado',
-      [EstadoEvento.CANCELADO]: 'Cancelado',
+      [EstadoEvento.PENDIENTE]:  'Pendiente',
+      [EstadoEvento.APROBADO]:   'Aprobado',
+      [EstadoEvento.RECHAZADO]:  'Rechazado',
+      [EstadoEvento.CANCELADO]:  'Cancelado',
       [EstadoEvento.COMPLETADO]: 'Completado'
     };
     return estadoMap[estado] || estado;
+  }
+
+  getDisposicionText(disposicion: string): string {
+    const disposiciones: Record<string, string> = {
+      AULA: 'Aula',
+      TEATRO: 'Teatro',
+      CONFERENCIA: 'Conferencia',
+      U: 'Mesas en U',
+      CABALLERO: 'Mesas paralelas',
+      CIRCULO: 'Mesas en círculo'
+    };
+    return disposiciones[disposicion] || disposicion;
   }
 
   editarEvento(): void {
@@ -96,53 +102,53 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  cancelarEvento(): void {
+  eliminarEvento(): void {
     if (!this.evento?.id) return;
-
-    const motivo = prompt('Ingrese el motivo de cancelación:');
-    if (motivo === null) return; // Usuario canceló
+    if (!confirm('¿Está seguro de eliminar este evento?')) return;
 
     this.loading = true;
-    const cancelSub = this.eventoService.cancelarEvento(this.evento.id, motivo).subscribe({
-      next: (eventoActualizado) => {
-        this.evento = eventoActualizado;
-        alert('Evento cancelado exitosamente');
+    const eliminarSub = this.eventoService.eliminarEvento(this.evento.id).subscribe({
+      next: () => {
+        alert('Evento eliminado correctamente');
+        this.router.navigate(['/eventos']);
       },
-      error: (err) => {
-        console.error('Error cancelando evento:', err);
-        alert('Error al cancelar el evento: ' + (err.error?.error || err.message));
+      error: (err: any) => {
+        console.error('Error eliminando evento:', err);
+        alert('Error al eliminar el evento: ' + (err.error?.error || err.message));
         this.loading = false;
       },
       complete: () => {
         this.loading = false;
       }
     });
-    this.subscriptions.add(cancelSub);
+    this.subscriptions.add(eliminarSub);
+  }
+
+  puedeEliminar(): boolean {
+    if (!this.evento) return false;
+    return this.evento.estado === EstadoEvento.PENDIENTE ||
+      this.evento.estado === EstadoEvento.RECHAZADO;
   }
 
   volverALista(): void {
     this.router.navigate(['/eventos']);
   }
 
-  // Métodos para administradores
   aprobarEvento(): void {
     if (!this.evento?.id || !this.isAdmin) return;
-
-    const confirmar = confirm('¿Está seguro de aprobar este evento?');
-    if (!confirmar) return;
+    if (!confirm('¿Está seguro de aprobar este evento?')) return;
 
     this.loading = true;
-    
     const aprobacionDTO: AprobacionEventoDTO = {
       estado: EstadoEvento.APROBADO
     };
 
     const aprobarSub = this.eventoService.aprobarRechazarEvento(this.evento.id, aprobacionDTO).subscribe({
-      next: (eventoActualizado) => {
+      next: (eventoActualizado: EventoAuditorio) => {
         this.evento = eventoActualizado;
-        alert('Evento aprobado exitosamente');
+        alert('Evento aprobado. El usuario será notificado automáticamente por correo.');
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error aprobando evento:', err);
         alert('Error al aprobar el evento: ' + (err.error?.error || err.message));
         this.loading = false;
@@ -164,18 +170,17 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    
     const aprobacionDTO: AprobacionEventoDTO = {
       estado: EstadoEvento.RECHAZADO,
       motivoRechazo: motivo.trim()
     };
 
     const rechazarSub = this.eventoService.aprobarRechazarEvento(this.evento.id, aprobacionDTO).subscribe({
-      next: (eventoActualizado) => {
+      next: (eventoActualizado: EventoAuditorio) => {
         this.evento = eventoActualizado;
-        alert('Evento rechazado exitosamente');
+        alert('Evento rechazado. El usuario será notificado automáticamente por correo.');
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error rechazando evento:', err);
         alert('Error al rechazar el evento: ' + (err.error?.error || err.message));
         this.loading = false;
@@ -187,49 +192,53 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     this.subscriptions.add(rechazarSub);
   }
 
-  /**
-   * MÉTODO CORREGIDO: Formatea fecha correctamente sin problemas de zona horaria
-   * Parsea el string YYYY-MM-DD manualmente para evitar ajustes de timezone
-   */
+  cancelarReserva(): void {
+    if (!this.evento?.id || !this.isAdmin) return;
+
+    const motivo = prompt('Ingrese el motivo de la cancelación:');
+    if (motivo === null) return;
+    if (!motivo.trim()) {
+      alert('Debe ingresar un motivo para cancelar la reserva.');
+      return;
+    }
+
+    if (!confirm('¿Confirma la cancelación de esta reserva?')) return;
+
+    this.loading = true;
+    const cancelarSub = this.eventoService.cancelarEvento(this.evento.id, motivo.trim()).subscribe({
+      next: (eventoActualizado: EventoAuditorio) => {
+        this.evento = eventoActualizado;
+        alert('Reserva cancelada. El usuario será notificado automáticamente por correo.');
+      },
+      error: (err: any) => {
+        console.error('Error cancelando evento:', err);
+        alert('Error al cancelar la reserva: ' + (err.error?.error || err.message));
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
+    this.subscriptions.add(cancelarSub);
+  }
+
   formatFecha(fecha: string | Date): string {
     if (!fecha) return 'N/A';
-    
     if (typeof fecha === 'string') {
-      // Extraer año, mes y día del string "YYYY-MM-DD"
       const [year, month, day] = fecha.split('T')[0].split('-').map(Number);
-      
-      // Crear fecha local sin conversión de zona horaria
       const fechaLocal = new Date(year, month - 1, day);
-      
       return fechaLocal.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
     }
-    
     return new Date(fecha).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
   }
 
-  /**
-   * MÉTODO CORREGIDO: Formatea hora correctamente
-   * Extrae solo HH:mm del string o Date
-   */
   formatHora(hora: string | Date): string {
     if (!hora) return 'N/A';
-    
-    if (typeof hora === 'string') {
-      // Si viene como "HH:mm:ss" o "HH:mm", extraer solo HH:mm
-      return hora.substring(0, 5);
-    }
-    
-    // Si es Date, convertir a formato HH:mm
+    if (typeof hora === 'string') return hora.substring(0, 5);
     const horaDate = new Date(hora);
     const horas = horaDate.getHours().toString().padStart(2, '0');
     const minutos = horaDate.getMinutes().toString().padStart(2, '0');

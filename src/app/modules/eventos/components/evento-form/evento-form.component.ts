@@ -3,8 +3,10 @@ import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventoService } from "../../../../core/services/evento.service";
 import { AuthService } from '../../../../core/services/auth.service';
-import { EventoAuditorio, TipoRequerimiento, EstadoEvento } from '../../../../core/models/model';
+import { EventoAuditorio, EstadoEvento } from '../../../../core/models/model';
 import { Subscription } from 'rxjs';
+import { TipoRequerimientoService } from '../../../../core/services/TipoRequerimiento.Service'
+import { TipoRequerimientoModel } from '../../../../core/models/model';
 
 @Component({
   selector: 'app-evento-form',
@@ -13,7 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class EventoFormComponent implements OnInit, OnDestroy {
   eventoForm: FormGroup;
-  tiposRequerimiento = Object.values(TipoRequerimiento);
+  tiposRequerimiento: TipoRequerimientoModel[] = [];
   isEditMode = false;
   eventoId?: number;
   loading = false;
@@ -21,9 +23,11 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   disponible = false;
   minDate: string;
   maxDate: string;
-  formErrors: any = {}; 
+  formErrors: any = {};
   private subscriptions: Subscription = new Subscription();
-  
+  private readonly draftKey = 'unibe-reserva-borrador';
+
+
   // Nueva propiedad para controlar si se puede editar
   puedeEditar = true;
   mensajeNoEditable = '';
@@ -32,8 +36,9 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private eventoService: EventoService,
     private authService: AuthService,
+    private tipoRequerimientoService: TipoRequerimientoService,
     private route: ActivatedRoute,
-    public router: Router 
+    public router: Router
   ) {
     this.eventoForm = this.createForm();
     this.minDate = this.getFechaMinima();
@@ -41,6 +46,10 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.tipoRequerimientoService.listarActivos().subscribe({
+      next: (tipos) => this.tiposRequerimiento = tipos,
+      error: () => alert('Error cargando tipos de requerimiento')
+    });
     const paramSub = this.route.params.subscribe(params => {
       if (params['id']) {
         this.isEditMode = true;
@@ -50,10 +59,23 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(paramSub);
 
-    // Suscribirse a cambios para debug
-    this.eventoForm.valueChanges.subscribe(() => {
+    if (!this.isEditMode) {
+      this.restaurarBorrador();
+      const fechaCalendario = this.route.snapshot.queryParamMap.get('fecha');
+      const horaCalendario = this.route.snapshot.queryParamMap.get('hora');
+      if (fechaCalendario || horaCalendario) {
+        this.eventoForm.patchValue({
+          ...(fechaCalendario ? { fechaEvento: fechaCalendario } : {}),
+          ...(horaCalendario ? { horaInicio: horaCalendario } : {})
+        });
+      }
+    }
+
+    const cambiosSub = this.eventoForm.valueChanges.subscribe(() => {
       this.actualizarErroresFormulario();
+      if (!this.isEditMode) this.guardarBorrador();
     });
+    this.subscriptions.add(cambiosSub);
   }
 
   ngOnDestroy(): void {
@@ -83,47 +105,47 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   // Validadores personalizados
   private fechaMinimaValidator(control: AbstractControl): { [key: string]: boolean } | null {
     if (!control.value) return null;
-    
+
     const fechaEvento = new Date(control.value);
     const hoy = new Date();
     const fechaMinima = new Date();
     fechaMinima.setDate(hoy.getDate() + 14);
-    
+
     fechaEvento.setHours(0, 0, 0, 0);
     fechaMinima.setHours(0, 0, 0, 0);
-    
+
     return fechaEvento < fechaMinima ? { fechaMinima: true } : null;
   }
 
   private horaValidator(control: AbstractControl): { [key: string]: boolean } | null {
     if (!control.value) return null;
-    
+
     const horaRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!horaRegex.test(control.value)) {
       return { formatoHoraInvalido: true };
     }
-    
+
     const [horas, minutos] = control.value.split(':').map(Number);
     const horaDate = new Date(2000, 0, 1, horas, minutos);
     const minTime = new Date(2000, 0, 1, 8, 0);
     const maxTime = new Date(2000, 0, 1, 20, 0);
-    
+
     if (horaDate < minTime || horaDate > maxTime) {
       return { horaFueraRango: true };
     }
-    
+
     return null;
   }
 
   private horaFinPosteriorValidator(group: FormGroup): { [key: string]: boolean } | null {
     const horaInicio = group.get('horaInicio')?.value;
     const horaFin = group.get('horaFin')?.value;
-    
+
     if (!horaInicio || !horaFin) return null;
-    
+
     const inicio = new Date(`2000-01-01T${horaInicio}`);
     const fin = new Date(`2000-01-01T${horaFin}`);
-    
+
     return fin <= inicio ? { horaFinAnterior: true } : null;
   }
 
@@ -131,13 +153,67 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     return this.eventoForm.get('requerimientos') as FormArray;
   }
 
-  agregarRequerimiento(): void {
-    this.requerimientos.push(this.fb.group({
-      tipo: ['', Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(1)]],
-      requerido: [true]
-    }));
+  compararTipos(tipoA: TipoRequerimientoModel | null, tipoB: TipoRequerimientoModel | null): boolean {
+    return tipoA?.id === tipoB?.id;
   }
+
+  cantidadDisponibleRecurso(index: number): number {
+    return this.requerimientos.at(index).get('tipo')?.value?.cantidadDisponible || 100;
+  }
+
+  private guardarBorrador(): void {
+    try {
+      sessionStorage.setItem(this.draftKey, JSON.stringify(this.eventoForm.getRawValue()));
+    } catch (error) {
+      console.warn('No se pudo guardar el borrador de la reserva', error);
+    }
+  }
+
+  private restaurarBorrador(): void {
+    try {
+      const contenido = sessionStorage.getItem(this.draftKey);
+      if (!contenido) return;
+      const borrador = JSON.parse(contenido);
+      const recursos = Array.isArray(borrador.requerimientos) ? borrador.requerimientos : [];
+      this.eventoForm.patchValue({ ...borrador, requerimientos: [] }, { emitEvent: false });
+      recursos.forEach((recurso: any) => {
+        this.agregarRequerimiento();
+        this.requerimientos.at(this.requerimientos.length - 1).patchValue(recurso, { emitEvent: false });
+      });
+    } catch (error) {
+      sessionStorage.removeItem(this.draftKey);
+      console.warn('No se pudo restaurar el borrador de la reserva', error);
+    }
+  }
+
+  private borrarBorrador(): void {
+    sessionStorage.removeItem(this.draftKey);
+  }
+
+agregarRequerimiento(): void {
+  const grupo = this.fb.group({
+    tipo: [null, Validators.required],
+    cantidad: [1, [Validators.required, Validators.min(1)]],
+    requerido: [true]
+  });
+
+  // Cuando cambia el tipo, actualizar el validador max de cantidad
+  grupo.get('tipo')!.valueChanges.subscribe((tipoSeleccionado: TipoRequerimientoModel | null) => {
+    const cantidadControl = grupo.get('cantidad')!;
+    if (tipoSeleccionado) {
+      cantidadControl.setValidators([
+        Validators.required,
+        Validators.min(1),
+        Validators.max(tipoSeleccionado.cantidadDisponible)
+      ]);
+    } else {
+      cantidadControl.setValidators([Validators.required, Validators.min(1)]);
+    }
+    cantidadControl.updateValueAndValidity();
+  });
+
+  this.requerimientos.push(grupo);
+}
 
   eliminarRequerimiento(index: number): void {
     this.requerimientos.removeAt(index);
@@ -145,13 +221,13 @@ export class EventoFormComponent implements OnInit, OnDestroy {
 
   private cargarEvento(): void {
     if (!this.eventoId) return;
-    
+
     this.loading = true;
     const eventoSub = this.eventoService.obtenerEventoPorId(this.eventoId).subscribe({
       next: (evento) => {
         // Verificar si el evento puede ser editado (debe faltar más de 14 días)
         this.verificarSiPuedeEditar(evento);
-        
+
         if (this.puedeEditar) {
           this.patchFormWithEvento(evento);
         } else {
@@ -173,40 +249,38 @@ export class EventoFormComponent implements OnInit, OnDestroy {
    * NUEVO: Verifica si el evento puede ser editado
    * Solo se puede editar si faltan más de 14 días para el evento
    */
-  private verificarSiPuedeEditar(evento: EventoAuditorio): void {
-    // Admin siempre puede editar
-    if (this.authService.isAdmin()) {
-      this.puedeEditar = true;
-      return;
-    }
-
-    // Eventos aprobados, completados o cancelados no se pueden editar por usuarios normales
-    if (evento.estado === EstadoEvento.APROBADO || 
-        evento.estado === EstadoEvento.COMPLETADO || 
-        evento.estado === EstadoEvento.CANCELADO) {
-      this.puedeEditar = false;
-      this.mensajeNoEditable = 'No se puede editar un evento en estado ' + evento.estado.toLowerCase();
-      return;
-    }
-
-    // Verificar si la fecha del evento está dentro de las próximas 2 semanas
-    const fechaEvento = typeof evento.fechaEvento === 'string' 
-      ? new Date(evento.fechaEvento) 
-      : evento.fechaEvento;
-    
-    const hoy = new Date();
-    const limite14Dias = new Date();
-    limite14Dias.setDate(hoy.getDate() + 14);
-    
-    fechaEvento.setHours(0, 0, 0, 0);
-    limite14Dias.setHours(0, 0, 0, 0);
-    
-    if (fechaEvento < limite14Dias) {
-      this.puedeEditar = false;
-      const diasRestantes = Math.ceil((fechaEvento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-      this.mensajeNoEditable = `No se puede editar este evento porque faltan solo ${diasRestantes} días. Se requieren mínimo 14 días de anticipación para realizar cambios.`;
-    }
+private verificarSiPuedeEditar(evento: EventoAuditorio): void {
+  if (this.authService.isAdmin()) {
+    this.puedeEditar = true;
+    return;
   }
+
+  if (evento.estado === EstadoEvento.APROBADO ||
+    evento.estado === EstadoEvento.COMPLETADO ||
+    evento.estado === EstadoEvento.RECHAZADO ||
+    evento.estado === EstadoEvento.CANCELADO) {
+    this.puedeEditar = false;
+    this.mensajeNoEditable = 'No se puede editar un evento en estado ' + evento.estado.toLowerCase();
+    return;
+  }
+
+  const fechaEvento = typeof evento.fechaEvento === 'string'
+    ? new Date(evento.fechaEvento)
+    : evento.fechaEvento;
+
+  const hoy = new Date();
+  const limite14Dias = new Date();
+  limite14Dias.setDate(hoy.getDate() + 14);
+
+  fechaEvento.setHours(0, 0, 0, 0);
+  limite14Dias.setHours(0, 0, 0, 0);
+
+  if (fechaEvento < limite14Dias) {
+    this.puedeEditar = false;
+    const diasRestantes = Math.ceil((fechaEvento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    this.mensajeNoEditable = `No se puede editar este evento porque faltan solo ${diasRestantes} días. Se requieren mínimo 14 días de anticipación para realizar cambios.`;
+  }
+}
 
   private patchFormWithEvento(evento: EventoAuditorio): void {
     // Limpiar requerimientos existentes
@@ -302,7 +376,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    
+
     const disponibilidadSub = this.eventoService.verificarDisponibilidad(
       formValue.fechaEvento,
       formValue.horaInicio,
@@ -315,8 +389,8 @@ export class EventoFormComponent implements OnInit, OnDestroy {
           alert('✅ ¡Horario disponible! No hay conflictos con eventos aprobados ni pendientes. Puede proceder con la solicitud.');
         } else {
           alert('❌ El auditorio NO está disponible en ese horario.\n\n' +
-                'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
-                '📅 Seleccione otra fecha u horario diferente.');
+            'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
+            '📅 Seleccione otra fecha u horario diferente.');
         }
       },
       error: (err) => {
@@ -325,7 +399,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
       },
       complete: () => this.loading = false
     });
-    
+
     this.subscriptions.add(disponibilidadSub);
   }
 
@@ -351,12 +425,12 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     // Validar duración máxima (8 horas)
     const horaInicio = this.eventoForm.get('horaInicio')?.value;
     const horaFin = this.eventoForm.get('horaFin')?.value;
-    
+
     if (horaInicio && horaFin) {
       const inicio = new Date(`2000-01-01T${horaInicio}`);
       const fin = new Date(`2000-01-01T${horaFin}`);
       const duracionHoras = (fin.getTime() - inicio.getTime()) / (1000 * 60 * 60);
-      
+
       if (duracionHoras > 8) {
         alert('La duración máxima permitida es de 8 horas');
         return;
@@ -366,15 +440,15 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     // NUEVA VALIDACIÓN: Verificar que el horario esté disponible
     if (!this.isEditMode && this.disponibilidadVerificada && !this.disponible) {
       alert('❌ No puede enviar la reserva porque el horario NO está disponible.\n\n' +
-            'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
-            'Por favor, seleccione otra fecha u horario.');
+        'Ya existe un evento APROBADO o PENDIENTE en esa fecha/hora.\n\n' +
+        'Por favor, seleccione otra fecha u horario.');
       return;
     }
 
     if (!this.isEditMode && !this.disponibilidadVerificada) {
       const confirmar = confirm('⚠️ No ha verificado la disponibilidad del horario.\n\n' +
-                                'Recomendamos verificar antes de enviar para asegurar que no hay conflictos.\n\n' +
-                                '¿Desea continuar sin verificar?');
+        'Recomendamos verificar antes de enviar para asegurar que no hay conflictos.\n\n' +
+        '¿Desea continuar sin verificar?');
       if (!confirmar) return;
     }
 
@@ -387,17 +461,18 @@ export class EventoFormComponent implements OnInit, OnDestroy {
 
     const submitSub = request.subscribe({
       next: (response) => {
-        const mensaje = this.isEditMode 
+        const mensaje = this.isEditMode
           ? 'Evento actualizado correctamente'
           : 'Solicitud de reserva enviada exitosamente. La universidad revisará su solicitud en los próximos días y recibirá una confirmación por correo electrónico.';
-        
+
+        this.borrarBorrador();
         alert(mensaje);
         this.router.navigate(['/eventos']);
       },
       error: (err) => {
         console.error('Error procesando solicitud:', err);
         let errorMsg = 'Error procesando la solicitud. Por favor, intente nuevamente.';
-        
+
         if (err.error?.error) {
           errorMsg = err.error.error;
         } else if (err.error?.message) {
@@ -405,13 +480,13 @@ export class EventoFormComponent implements OnInit, OnDestroy {
         } else if (err.message) {
           errorMsg = err.message;
         }
-        
+
         alert(errorMsg);
         this.loading = false;
       },
       complete: () => this.loading = false
     });
-    
+
     this.subscriptions.add(submitSub);
   }
 
@@ -460,6 +535,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
 
   cancelar(): void {
     if (confirm('¿Está seguro de cancelar? Los cambios no guardados se perderán.')) {
+      this.borrarBorrador();
       this.router.navigate(['/eventos']);
     }
   }
@@ -477,14 +553,14 @@ export class EventoFormComponent implements OnInit, OnDestroy {
   }
 
   // Getters para validación
-  get nombreEvento() { return this.eventoForm.get('nombreEvento'); }
-  get descripcion() { return this.eventoForm.get('descripcion'); }
-  get fechaEvento() { return this.eventoForm.get('fechaEvento'); }
-  get horaInicio() { return this.eventoForm.get('horaInicio'); }
-  get horaFin() { return this.eventoForm.get('horaFin'); }
-  get numeroAsistentes() { return this.eventoForm.get('numeroAsistentes'); }
-  get responsableNombre() { return this.eventoForm.get('responsable.nombre'); }
-  get responsableCorreo() { return this.eventoForm.get('responsable.correo'); }
-  get responsableTelefono() { return this.eventoForm.get('responsable.telefono'); }
-  get tipoDisposicion() { return this.eventoForm.get('tipoDisposicion'); }
+  get nombreEvento() { return this.eventoForm.get('nombreEvento')!; }
+  get descripcion() { return this.eventoForm.get('descripcion')!; }
+  get fechaEvento() { return this.eventoForm.get('fechaEvento')!; }
+  get horaInicio() { return this.eventoForm.get('horaInicio')!; }
+  get horaFin() { return this.eventoForm.get('horaFin')!; }
+  get numeroAsistentes() { return this.eventoForm.get('numeroAsistentes')!; }
+  get responsableNombre() { return this.eventoForm.get('responsable.nombre')!; }
+  get responsableCorreo() { return this.eventoForm.get('responsable.correo')!; }
+  get responsableTelefono() { return this.eventoForm.get('responsable.telefono')!; }
+  get tipoDisposicion() { return this.eventoForm.get('tipoDisposicion')!; }
 }

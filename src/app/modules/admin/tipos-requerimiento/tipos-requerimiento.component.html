@@ -1,0 +1,33 @@
+<section class="requirements-admin" aria-labelledby="admin-title">
+  <header class="page-hero"><div><span class="eyebrow">Administración del sistema</span><h1 id="admin-title">Recursos del auditorio</h1><p>Administra los equipos y servicios disponibles para las reservas.</p></div><button type="button" class="primary-button" (click)="abrirFormularioNuevo()"><i class="fas fa-plus"></i> Nuevo recurso</button></header>
+
+  <div class="summary-strip">
+    <article><i class="fas fa-toolbox"></i><div><strong>{{ totalElementos }}</strong><small>Registrados</small></div></article>
+    <article><i class="fas fa-circle-check"></i><div><strong>{{ contarActivos() }}</strong><small>Activos</small></div></article>
+    <article><i class="fas fa-circle-pause"></i><div><strong>{{ totalElementos - contarActivos() }}</strong><small>Inactivos</small></div></article>
+    <article><i class="fas fa-boxes-stacked"></i><div><strong>{{ totalDisponible() }}</strong><small>Unidades disponibles</small></div></article>
+  </div>
+
+  <section *ngIf="mostrarFormulario" class="editor-panel">
+    <header><span><i class="fas" [class.fa-pen]="modoEdicion" [class.fa-plus]="!modoEdicion"></i></span><div><h2>{{ modoEdicion ? 'Editar recurso' : 'Registrar nuevo recurso' }}</h2><p>{{ modoEdicion ? 'Actualiza la información y disponibilidad.' : 'Añade un equipo o servicio al catálogo.' }}</p></div><button type="button" (click)="cerrarFormulario()" aria-label="Cerrar"><i class="fas fa-xmark"></i></button></header>
+    <form [formGroup]="tipoForm" (ngSubmit)="guardar()">
+      <div class="form-field"><label for="nombreRecurso">Nombre <em>*</em></label><input id="nombreRecurso" type="text" formControlName="nombre" placeholder="Ej. Proyector multimedia" [class.invalid]="nombre.invalid && nombre.touched"><small>Nombre visible en el formulario de reservas.</small><div class="field-error" *ngIf="nombre.touched && nombre.hasError('required')">El nombre es obligatorio.</div><div class="field-error" *ngIf="nombre.touched && nombre.hasError('minlength')">Utiliza al menos 2 caracteres.</div></div>
+      <div class="form-field"><label for="descripcionRecurso">Descripción</label><input id="descripcionRecurso" type="text" formControlName="descripcion" placeholder="Descripción breve" [class.invalid]="descripcion.invalid && descripcion.touched"><small>Opcional, máximo 255 caracteres.</small><div class="field-error" *ngIf="descripcion.touched && descripcion.invalid">Supera los 255 caracteres.</div></div>
+      <div class="form-field"><label for="cantidadRecurso">Cantidad disponible <em>*</em></label><input id="cantidadRecurso" type="number" formControlName="cantidadDisponible" min="1" [class.invalid]="tipoForm.get('cantidadDisponible')!.invalid && tipoForm.get('cantidadDisponible')!.touched"><small>Máximo que puede solicitarse.</small><div class="field-error" *ngIf="tipoForm.get('cantidadDisponible')!.touched && tipoForm.get('cantidadDisponible')!.invalid">La cantidad mínima es 1.</div></div>
+      <label class="status-toggle" for="activoSwitch"><input id="activoSwitch" type="checkbox" formControlName="activo"><span></span><div><strong>Disponible para reservas</strong><small>Los usuarios podrán seleccionarlo.</small></div></label>
+      <div class="editor-actions"><button type="button" class="secondary-button" (click)="cerrarFormulario()">Cancelar</button><button type="submit" class="save-button" [disabled]="guardando"><span *ngIf="guardando" class="spinner-border spinner-border-sm"></span><i *ngIf="!guardando" class="fas fa-floppy-disk"></i>{{ guardando ? 'Guardando...' : (modoEdicion ? 'Guardar cambios' : 'Crear recurso') }}</button></div>
+    </form>
+  </section>
+
+  <section class="catalog-panel">
+    <header><div><h2>Catálogo de recursos</h2><p>Equipos y servicios disponibles para las reservas.</p></div><span>{{ totalElementos }} registro(s)</span></header>
+    <div *ngIf="loading" class="loading-state"><span class="spinner-border"></span><strong>Cargando recursos</strong></div>
+    <div *ngIf="!loading && tipos.length === 0" class="empty-state"><i class="fas fa-box-open"></i><h3>No hay recursos registrados</h3><p>Crea el primer recurso para comenzar.</p><button type="button" class="primary-button" (click)="abrirFormularioNuevo()">Crear recurso</button></div>
+    <div *ngIf="!loading && tipos.length > 0" class="table-wrap"><table><thead><tr><th>Recurso</th><th>Descripción</th><th>Disponibilidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody><tr *ngFor="let tipo of tipos"><td data-label="Recurso"><div class="resource-name"><i class="fas fa-toolbox"></i><span><strong>{{ tipo.nombre }}</strong><small>ID #{{ tipo.id }}</small></span></div></td><td data-label="Descripción">{{ tipo.descripcion || 'Sin descripción registrada' }}</td><td data-label="Disponibilidad"><strong class="stock"><i class="fas fa-boxes-stacked"></i>{{ tipo.cantidadDisponible }} unidad(es)</strong></td><td data-label="Estado"><span class="state" [class.state--inactive]="!tipo.activo"><i class="fas fa-circle"></i>{{ tipo.activo ? 'Activo' : 'Inactivo' }}</span></td><td data-label="Acciones"><div class="row-actions"><button type="button" (click)="abrirFormularioEditar(tipo)"><i class="far fa-pen-to-square"></i> Editar</button><button type="button" class="delete" (click)="eliminar(tipo)"><i class="far fa-trash-can"></i> Eliminar</button></div></td></tr></tbody></table></div>
+    <app-pagination *ngIf="!loading"
+      [pagina]="paginaActual" [tamanio]="tamanioPagina"
+      [totalElementos]="totalElementos" [totalPaginas]="totalPaginas"
+      (paginaChange)="cambiarPagina($event)" (tamanioChange)="cambiarTamanio($event)">
+    </app-pagination>
+  </section>
+</section>

@@ -1,0 +1,29 @@
+<main class="users-page">
+  <header class="page-heading"><div><span>Administración</span><h1>Gestión de usuarios</h1><p>Consulta, corrige y controla el acceso de las cuentas registradas.</p></div><div class="summary"><strong>{{ totalElementos }}</strong><small>cuentas encontradas</small></div></header>
+  <div *ngIf="error" class="notice error"><i class="fas fa-circle-exclamation"></i>{{ error }}<button (click)="error = ''">×</button></div>
+  <div *ngIf="mensaje" class="notice success"><i class="fas fa-circle-check"></i>{{ mensaje }}<button (click)="mensaje = ''">×</button></div>
+  <section class="toolbar"><div class="search"><i class="fas fa-magnifying-glass"></i><input [(ngModel)]="buscar" (keyup.enter)="buscarUsuarios()" placeholder="Buscar por cédula, nombre, correo o teléfono"><button *ngIf="buscar" (click)="limpiarBusqueda()">×</button></div><button class="primary" (click)="buscarUsuarios()"><i class="fas fa-search"></i> Buscar</button></section>
+  <section class="users-card">
+    <div *ngIf="cargando" class="state"><span class="spinner-border"></span><p>Cargando usuarios...</p></div>
+    <div *ngIf="!cargando && usuarios.length === 0" class="state"><i class="fas fa-users-slash"></i><strong>Sin resultados</strong><p>No encontramos cuentas con ese criterio.</p></div>
+    <div *ngIf="!cargando && usuarios.length" class="table-wrap"><table><thead><tr><th>Usuario</th><th>Contacto</th><th>Rol</th><th>Estado</th><th></th></tr></thead><tbody><tr *ngFor="let usuario of usuarios">
+      <td><div class="identity"><b>{{ usuario.nombre.charAt(0) }}</b><span><strong>{{ usuario.nombreCompleto }}</strong><small>C.I. {{ usuario.username }} <em *ngIf="esCuentaActual(usuario)">Tu cuenta</em></small></span></div></td>
+      <td><span class="contact"><strong>{{ usuario.correoInstitucional }}</strong><small>{{ usuario.telefono }}</small></span></td><td><span class="role" [class.admin]="usuario.role === 'ADMIN'">{{ usuario.role === 'ADMIN' ? 'Administrador' : 'Usuario' }}</span></td><td><span class="status" [class.inactive]="!usuario.activo"><i class="fas fa-circle"></i>{{ usuario.activo ? 'Activa' : 'Inactiva' }}</span></td>
+      <td><div class="actions"><button (click)="editar(usuario)"><i class="fas fa-pen"></i> Editar</button><button [disabled]="esCuentaActual(usuario)" (click)="cambiarEstado(usuario)" [class.activate]="!usuario.activo"><i class="fas" [ngClass]="usuario.activo ? 'fa-user-slash' : 'fa-user-check'"></i>{{ usuario.activo ? 'Desactivar' : 'Activar' }}</button></div></td>
+    </tr></tbody></table></div>
+    <app-pagination *ngIf="!cargando"
+      [pagina]="paginaActual" [tamanio]="tamanioPagina"
+      [totalElementos]="totalElementos" [totalPaginas]="totalPaginas"
+      (paginaChange)="cambiarPagina($event)" (tamanioChange)="cambiarTamanio($event)">
+    </app-pagination>
+  </section>
+  <div *ngIf="seleccionado" class="drawer-backdrop" (click)="cerrarEdicion()"></div>
+  <aside *ngIf="seleccionado" class="edit-drawer"><header><div><small>Editar cuenta</small><h2>{{ seleccionado.nombreCompleto }}</h2><p>C.I. {{ seleccionado.username }}</p></div><button (click)="cerrarEdicion()">×</button></header><div class="drawer-body">
+    <form [formGroup]="usuarioForm" (ngSubmit)="guardar()"><h3>Información de la cuenta</h3><div class="form-grid">
+      <label><span>Cédula</span><input formControlName="username" maxlength="10"><small *ngIf="controlInvalido('username')">Debe tener 10 números.</small></label><label><span>Teléfono</span><input formControlName="telefono" maxlength="10"><small *ngIf="controlInvalido('telefono')">Debe tener 10 números.</small></label>
+      <label><span>Nombre</span><input formControlName="nombre"><small *ngIf="controlInvalido('nombre')">Utiliza solamente letras.</small></label><label><span>Apellido</span><input formControlName="apellido"><small *ngIf="controlInvalido('apellido')">Utiliza solamente letras.</small></label>
+      <label class="wide"><span>Correo</span><input type="email" formControlName="correoInstitucional"><small *ngIf="controlInvalido('correoInstitucional')">Ingresa un correo válido.</small></label><label><span>Rol</span><select formControlName="role"><option value="USER">Usuario</option><option value="ADMIN">Administrador</option></select></label><label class="switch"><input type="checkbox" formControlName="activo"><span>Cuenta activa</span></label>
+    </div><button class="primary full" type="submit" [disabled]="guardando"><i class="fas fa-floppy-disk"></i>{{ guardando ? 'Guardando...' : 'Guardar cambios' }}</button></form>
+    <form [formGroup]="passwordForm" (ngSubmit)="restablecerPassword()" class="password-section"><h3>Restablecer contraseña</h3><p>No es posible consultar la contraseña actual. Establece una temporal segura.</p><label><span>Nueva contraseña temporal</span><div class="password-input"><input [type]="mostrarPassword ? 'text' : 'password'" formControlName="nuevaPassword"><button type="button" (click)="mostrarPassword = !mostrarPassword"><i class="fas" [ngClass]="mostrarPassword ? 'fa-eye-slash' : 'fa-eye'"></i></button></div><small *ngIf="passwordForm.controls.nuevaPassword.invalid && passwordForm.controls.nuevaPassword.touched">Mínimo 8 caracteres con mayúscula, minúscula, número y símbolo.</small></label><button type="submit" class="secondary"><i class="fas fa-key"></i> Restablecer contraseña</button></form>
+  </div></aside>
+</main>

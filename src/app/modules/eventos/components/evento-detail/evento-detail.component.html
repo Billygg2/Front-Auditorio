@@ -1,214 +1,171 @@
-<div class="container mt-4" *ngIf="!loading; else loadingTemplate">
-  <!-- Botón de volver -->
-  <div class="mb-4">
-    <button class="btn btn-outline-secondary" (click)="volverALista()">
-      <i class="fas fa-arrow-left me-2"></i> Volver a la lista
-    </button>
+<section class="event-detail-page">
+  <div *ngIf="loading" class="loading-card"><span class="spinner-border"></span>
+    <h2>Cargando detalles</h2>
+    <p>Estamos consultando la información de la reserva.</p>
+  </div>
+  <div *ngIf="!loading && error" class="message-state"><i class="fas fa-circle-exclamation"></i>
+    <h2>No pudimos cargar el evento</h2>
+    <p>{{ error }}</p><button (click)="volverALista()">Volver a eventos</button>
   </div>
 
-  <!-- Error message -->
-  <div *ngIf="error" class="alert alert-danger">
-    <i class="fas fa-exclamation-triangle me-2"></i>
-    {{ error }}
-  </div>
+  <ng-container *ngIf="!loading && evento">
+    <nav class="breadcrumb-bar"><button (click)="volverALista()"><i class="fas fa-arrow-left"></i> {{ isAdmin ?
+        'Eventos' : 'Mis reservas' }}</button><span>/</span><strong>Detalle del evento</strong></nav>
 
-  <!-- Detalles del evento -->
-  <div *ngIf="evento" class="card shadow">
-    <!-- Header con estado -->
-    <div class="card-header bg-primary text-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h3 class="mb-0">
-            <i class="fas fa-calendar-alt me-2"></i>
-            {{ evento.nombreEvento }}
-          </h3>
-          <span class="badge" [ngClass]="getEstadoBadgeClass(evento.estado)">
-            {{ getEstadoText(evento.estado) }}
-          </span>
-        </div>
-        
-        <!-- Botones de acción -->
-        <div class="d-flex gap-2">
-          <button *ngIf="evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO'" 
-                  class="btn btn-warning" 
-                  (click)="editarEvento()">
-            <i class="fas fa-edit me-1"></i> Editar
-          </button>
-          
-          <button *ngIf="evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO'" 
-                  class="btn btn-danger" 
-                  (click)="cancelarEvento()">
-            <i class="fas fa-times me-1"></i> Cancelar
-          </button>
-          
-          <!-- Botones para administradores -->
-          <div *ngIf="isAdmin && evento.estado === 'PENDIENTE'" class="d-flex gap-2">
-            <button class="btn btn-success" (click)="aprobarEvento()">
-              <i class="fas fa-check me-1"></i> Aprobar
-            </button>
-            <button class="btn btn-danger" (click)="rechazarEvento()">
-              <i class="fas fa-times me-1"></i> Rechazar
-            </button>
-          </div>
-        </div>
+    <header class="detail-hero">
+      <div><span class="status" [ngClass]="'status--' + evento.estado.toLowerCase()"><i class="fas fa-circle"></i>{{
+          getEstadoText(evento.estado) }}</span>
+        <h1>{{ evento.nombreEvento }}</h1>
+        <p>Reserva del Auditorio UNIB.E · Solicitud #{{ evento.id }}</p>
+      </div>
+      <div class="detail-actions">
+        <button *ngIf="isAdmin && (evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO')"
+          (click)="editarEvento()"><i class="far fa-pen-to-square"></i> Editar</button>
+        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" class="approve" (click)="aprobarEvento()"><i
+            class="fas fa-check"></i> Aprobar</button>
+        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" (click)="rechazarEvento()"><i class="fas fa-xmark"></i>
+          Rechazar</button>
+        <button *ngIf="isAdmin && evento.estado === 'APROBADO'" class="cancel" (click)="cancelarReserva()"><i
+            class="fas fa-ban"></i> Cancelar reserva</button>
+        <button *ngIf="puedeEliminar()" (click)="eliminarEvento()"><i class="far fa-trash-can"></i> Eliminar</button>
+      </div>
+    </header>
+
+    <div class="event-summary">
+      <article><span><i class="far fa-calendar"></i></span>
+        <div><small>Fecha del evento</small><strong>{{ formatFecha(evento.fechaEvento) }}</strong></div>
+      </article>
+      <article><span><i class="far fa-clock"></i></span>
+        <div><small>Horario reservado</small><strong>{{ formatHora(evento.horaInicio) }} – {{ formatHora(evento.horaFin)
+            }}</strong></div>
+      </article>
+      <article><span><i class="fas fa-users"></i></span>
+        <div><small>Asistencia estimada</small><strong>{{ evento.numeroAsistentes }} personas</strong></div>
+      </article>
+      <article><span><i class="fas fa-chair"></i></span>
+        <div><small>Disposición</small><strong>{{ getDisposicionText(evento.tipoDisposicion) }}</strong></div>
+      </article>
+    </div>
+
+    <div *ngIf="evento.motivoRechazo" class="rejection-banner"><i class="fas fa-circle-exclamation"></i>
+      <div><strong>{{ evento.estado === 'CANCELADO' ? 'Motivo de la cancelación' : 'Motivo del rechazo' }}</strong>
+        <p>{{ evento.motivoRechazo }}</p>
       </div>
     </div>
 
-    <!-- Cuerpo del card -->
-    <div class="card-body">
-      <!-- Información básica -->
-      <div class="row mb-4">
-        <div class="col-md-6">
-          <h5 class="border-bottom pb-2 mb-3">
-            <i class="fas fa-info-circle me-2 text-primary"></i>
-            Información del Evento
-          </h5>
-          
-          <div class="mb-3">
-            <strong>Descripción:</strong>
-            <p class="mt-1">{{ evento.descripcion }}</p>
+    <div class="detail-grid">
+      <main class="main-column">
+        <section class="detail-card">
+          <header><span><i class="fas fa-align-left"></i></span>
+            <div>
+              <h2>Descripción del evento</h2>
+              <p>Objetivo y actividades planificadas</p>
+            </div>
+          </header>
+          <div class="description-content">
+            <p>{{ evento.descripcion || 'No se registró una descripción.' }}</p>
           </div>
-          
-          <div class="row">
-            <div class="col-md-6 mb-2">
-              <strong><i class="fas fa-calendar me-2"></i>Fecha:</strong>
-              <p class="mt-1">{{ formatFecha(evento.fechaEvento) }}</p>
-            </div>
-            
-            <div class="col-md-6 mb-2">
-              <strong><i class="fas fa-clock me-2"></i>Horario:</strong>
-              <p class="mt-1">{{ formatHora(evento.horaInicio) }} - {{ formatHora(evento.horaFin) }}</p>
-            </div>
-            
-            <div class="col-md-6 mb-2">
-              <strong><i class="fas fa-users me-2"></i>Asistentes:</strong>
-              <p class="mt-1">{{ evento.numeroAsistentes }} personas</p>
-            </div>
-            
-            <div class="col-md-6 mb-2">
-              <strong><i class="fas fa-chair me-2"></i>Disposición:</strong>
-              <p class="mt-1">{{ evento.tipoDisposicion }}</p>
-            </div>
-          </div>
-          
-          <!-- Opciones adicionales -->
-          <div class="mt-3">
-            <strong>Opciones:</strong>
-            <div class="d-flex gap-3 mt-2">
-              <span class="badge" [ngClass]="evento.publicoExterno ? 'bg-info' : 'bg-secondary'">
-                <i class="fas fa-users me-1"></i>
-                {{ evento.publicoExterno ? 'Público Externo' : 'Público Interno' }}
-              </span>
-              
-              <span class="badge" [ngClass]="evento.requiereRegistroPrevio ? 'bg-warning' : 'bg-secondary'">
-                <i class="fas fa-clipboard-list me-1"></i>
-                {{ evento.requiereRegistroPrevio ? 'Requiere Registro' : 'Sin Registro' }}
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Responsable -->
-        <div class="col-md-6">
-          <h5 class="border-bottom pb-2 mb-3">
-            <i class="fas fa-user-tie me-2 text-primary"></i>
-            Responsable del Evento
-          </h5>
-          
-          <div *ngIf="evento.responsable" class="card">
-            <div class="card-body">
-              <h6 class="card-title">{{ evento.responsable.nombre }}</h6>
-              <p class="mb-1">
-                <i class="fas fa-envelope me-2"></i>
-                {{ evento.responsable.correo }}
-              </p>
-              <p class="mb-0">
-                <i class="fas fa-phone me-2"></i>
-                {{ evento.responsable.telefono }}
-              </p>
-            </div>
-          </div>
-          
-          <!-- Motivo de rechazo/cancelación -->
-          <div *ngIf="evento.motivoRechazo" class="mt-4">
-            <h5 class="border-bottom pb-2 mb-3">
-              <i class="fas fa-exclamation-circle me-2 text-danger"></i>
-              Motivo
-            </h5>
-            <div class="alert alert-danger">
-              <p class="mb-0">{{ evento.motivoRechazo }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- Requerimientos técnicos -->
-      <div *ngIf="evento.requerimientos && evento.requerimientos.length > 0" class="mt-4">
-        <h5 class="border-bottom pb-2 mb-3">
-          <i class="fas fa-tools me-2 text-primary"></i>
-          Requerimientos Técnicos
-        </h5>
-        
-        <div class="row">
-          <div *ngFor="let req of evento.requerimientos" class="col-md-4 mb-3">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-title">
-                  {{ req.tipo }}
-                  <span class="badge ms-2" [ngClass]="req.requerido ? 'bg-primary' : 'bg-secondary'">
-                    {{ req.requerido ? 'Requerido' : 'Opcional' }}
-                  </span>
-                </h6>
-                <p class="card-text">
-                  <i class="fas fa-box me-2"></i>
-                  Cantidad: {{ req.cantidad }}
-                </p>
+        <section class="detail-card">
+          <header><span><i class="fas fa-sliders"></i></span>
+            <div>
+              <h2>Características de la reserva</h2>
+              <p>Condiciones definidas para los asistentes</p>
+            </div>
+          </header>
+          <div class="feature-grid">
+            <article [class.active]="evento.publicoExterno"><i class="fas fa-earth-americas"></i>
+              <div><em [class.yes]="evento.publicoExterno">{{ evento.publicoExterno ? 'Sí' : 'No' }}</em><strong>Público
+                  externo</strong>
+                <p>{{ evento.publicoExterno ? 'Participarán personas ajenas a la universidad.' : 'Actividad para la
+                  comunidad universitaria.' }}</p>
               </div>
+            </article>
+            <article [class.active]="evento.requiereRegistroPrevio"><i class="fas fa-clipboard-check"></i>
+              <div><em [class.yes]="evento.requiereRegistroPrevio">{{ evento.requiereRegistroPrevio ? 'Sí' : 'No'
+                  }}</em><strong>Requiere registro previo</strong>
+                <p>{{ evento.requiereRegistroPrevio ? 'Los asistentes deberán registrarse antes.' : 'No necesita
+                  registro previo.' }}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <header><span><i class="fas fa-toolbox"></i></span>
+            <div>
+              <h2>Recursos técnicos</h2>
+              <p>Equipos solicitados para el evento</p>
+            </div><strong class="resource-count">{{ evento.requerimientos.length }} recurso(s)</strong>
+          </header>
+          <div *ngIf="evento.requerimientos.length" class="resource-list">
+            <article *ngFor="let req of evento.requerimientos"><span><i class="fas fa-box"></i></span>
+              <div><strong>{{ req.tipo.nombre }}</strong><small>Cantidad solicitada: {{ req.cantidad }}</small></div><em
+                [class.required]="req.requerido">{{ req.requerido ? 'Indispensable' : 'Opcional' }}</em>
+            </article>
+          </div>
+          <div *ngIf="!evento.requerimientos.length" class="resources-empty"><i class="fas fa-box-open"></i>
+            <div><strong>Sin recursos adicionales</strong>
+              <p>Este evento no necesita equipos específicos.</p>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
-      <!-- Mensaje si no hay requerimientos -->
-      <div *ngIf="(!evento.requerimientos || evento.requerimientos.length === 0)" class="alert alert-info mt-4">
-        <i class="fas fa-info-circle me-2"></i>
-        Este evento no tiene requerimientos técnicos especificados.
-      </div>
+      <aside class="side-column">
+        <section class="contact-card">
+          <header><span><i class="far fa-address-card"></i></span>
+            <div>
+              <h2>Responsable del evento</h2>
+              <p>Contacto para coordinación</p>
+            </div>
+          </header>
+          <div class="person"><b>{{ evento.responsable.nombre.charAt(0).toUpperCase() }}</b>
+            <div><strong>{{ evento.responsable.nombre }}</strong><small>Responsable registrado</small></div>
+          </div><a [href]="'mailto:' + evento.responsable.correo"><i class="far fa-envelope"></i><span><small>Correo
+                electrónico</small><strong>{{ evento.responsable.correo }}</strong></span></a><a
+            [href]="'tel:' + evento.responsable.telefono"><i
+              class="fas fa-phone"></i><span><small>Teléfono</small><strong>{{ evento.responsable.telefono
+                }}</strong></span></a>
+        </section>
+
+        <section *ngIf="isAdmin" class="requester-card">
+          <header><span><i class="fas fa-user-shield"></i></span>
+            <div>
+              <h2>Usuario solicitante</h2>
+              <p>Cuenta que creó la reserva</p>
+            </div>
+          </header><ng-container *ngIf="evento.usuarioSolicitante; else noRequester">
+            <div class="person requester"><b>{{ (evento.usuarioSolicitante.nombre ||
+                evento.usuarioSolicitante.username).charAt(0).toUpperCase() }}</b>
+              <div><strong>{{ evento.usuarioSolicitante.nombre }} {{ evento.usuarioSolicitante.apellido
+                  }}</strong><small>{{ evento.usuarioSolicitante.username }}</small></div>
+            </div>
+            <p><i class="far fa-envelope"></i>{{ evento.usuarioSolicitante.correoInstitucional }}</p>
+            <p><i class="fas fa-phone"></i>{{ evento.usuarioSolicitante.telefono || 'No registrado' }}</p>
+          </ng-container><ng-template #noRequester>
+            <p>No se recibió información del solicitante.</p>
+          </ng-template>
+        </section>
+
+        <section class="process-card">
+          <h2>Estado de la solicitud</h2>
+          <div class="step done"><span><i class="fas fa-check"></i></span>
+            <p><strong>Solicitud enviada</strong>Información registrada.</p>
+          </div><i class="line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
+          <div class="step" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-clock"></i></span>
+            <p><strong>Revisión administrativa</strong>{{ evento.estado === 'PENDIENTE' ? 'Pendiente de evaluación.' :
+              'Solicitud evaluada.' }}</p>
+          </div><i class="line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
+          <div class="step" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-flag"></i></span>
+            <p><strong>Resolución</strong>{{ getEstadoText(evento.estado) }}</p>
+          </div>
+        </section>
+      </aside>
     </div>
 
-    <!-- Footer -->
-    <div class="card-footer bg-light">
-      <div class="row">
-<div class="col-md-6">
-  <small class="text-muted">
-    <i class="fas fa-calendar-plus me-1"></i>
-    
-    Creado por: Sistema
-  </small>
-</div>
-        <div class="col-md-6 text-end">
-          <small class="text-muted">
-            <i class="fas fa-id-badge me-1"></i>
-            ID: {{ evento.id }}
-          </small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mensaje si no se encuentra el evento -->
-  <div *ngIf="!evento && !error" class="alert alert-warning">
-    <i class="fas fa-exclamation-triangle me-2"></i>
-    No se encontró el evento solicitado.
-  </div>
-</div>
-
-<!-- Template de carga -->
-<ng-template #loadingTemplate>
-  <div class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
-    </div>
-    <p class="mt-2">Cargando detalles del evento...</p>
-  </div>
-</ng-template>
+    <footer class="detail-footer"><button (click)="volverALista()"><i class="fas fa-arrow-left"></i>
+        Volver</button><span><i class="fas fa-shield-halved"></i> Información institucional protegida</span></footer>
+  </ng-container>
+</section>

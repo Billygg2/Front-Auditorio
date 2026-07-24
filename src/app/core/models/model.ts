@@ -1,3 +1,5 @@
+import { User } from "./auth.model";
+
 export enum EstadoEvento {
   PENDIENTE = 'PENDIENTE',
   APROBADO = 'APROBADO',
@@ -6,24 +8,17 @@ export enum EstadoEvento {
   COMPLETADO = 'COMPLETADO'
 }
 
-export enum TipoRequerimiento {
-  PROYECTOR = 'PROYECTOR',
-  MICRÓFONO = 'MICRÓFONO',
-  PANTALLA = 'PANTALLA',
-  SISTEMA_DE_SONIDO = 'SISTEMA_DE_SONIDO',
-  LAPTOP = 'LAPTOP',
-  INTERNET = 'INTERNET',
-  SILLAS_ADICIONALES = 'SILLAS_ADICIONALES',
-  MESA_PRINCIPAL = 'MESA_PRINCIPAL',
-  PIZARRA = 'PIZARRA',
-  CAFETERÍA = 'CAFETERÍA',
-  AIRE_ACONDICIONADO = 'AIRE_ACONDICIONADO',
-  ILUMINACIÓN_ESPECIAL = 'ILUMINACIÓN_ESPECIAL'
+export interface TipoRequerimientoModel {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
+  cantidadDisponible: number; 
 }
 
 export interface Requerimiento {
   id?: number;
-  tipo: TipoRequerimiento;
+  tipo: TipoRequerimientoModel;  
   cantidad: number;
   requerido: boolean;
 }
@@ -50,6 +45,7 @@ export interface EventoAuditorio {
   responsable: Responsable;
   requerimientos: Requerimiento[];
   motivoRechazo?: string;
+  usuarioSolicitante?: User;
 }
 
 export interface AprobacionEventoDTO {

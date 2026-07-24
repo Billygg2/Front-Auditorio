@@ -39,7 +39,7 @@ export class LoginComponent {
     this.authService.login(this.credentials).subscribe({
       next: () => {
         // Login exitoso, redirigir a eventos
-        this.router.navigate(['/eventos']);
+        this.router.navigate(['/eventos/calendario']);
       },
       error: (err) => {
         console.error('Error en login:', err);
@@ -48,7 +48,7 @@ export class LoginComponent {
         if (err.status === 401) {
           this.error = 'Usuario o contraseña incorrectos';
         } else if (err.status === 0) {
-          this.error = 'No se pudo conectar con el servidor. Verifique que el backend esté corriendo.';
+          this.error = 'No se pudo conectar con el servidor.';
         } else {
           this.error = 'Error al iniciar sesión. Intente nuevamente.';
         }

@@ -1,263 +1,578 @@
+$navy: #1c2544;
+$blue: #004990;
+$yellow: #fecc0d;
+$white: #fff;
+$muted: #6f7890;
+$border: #dfe4ec;
+
 :host {
-  display: block;
+    display: block
 }
 
-// Estilos para la tabla
-.table-hover {
-  tbody tr {
-    &:hover {
-      background-color: rgba(0, 123, 255, 0.05);
-      transition: background-color 0.2s ease;
-    }
-    
-    td {
-      vertical-align: middle;
-    }
-  }
+.reservations-page {
+    max-width: 1320px;
+    margin: auto;
+    color: $navy
 }
 
-// Estilos para badges
-.badge {
-  padding: 0.5em 0.75em;
-  font-weight: 500;
-  font-size: 0.85em;
-  
-  &.badge-success {
-    background-color: #28a745;
-    color: white;
-  }
-  
-  &.badge-warning {
-    background-color: #ffc107;
-    color: #212529;
-  }
-  
-  &.badge-danger {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  &.badge-secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  &.badge-info {
-    background-color: #17a2b8;
-    color: white;
-  }
-  
-  &.badge-light {
-    background-color: #f8f9fa;
-    color: #212529;
-  }
-  
-  &.bg-info {
-    background-color: #17a2b8 !important;
-  }
-  
-  &.bg-warning {
-    background-color: #ffc107 !important;
-  }
-  
-  &.bg-primary {
-    background-color: #0d6efd !important;
-  }
+.page-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 26px;
+    padding: 12px 0
 }
 
-// Estilos para botones
-.btn-group-sm {
-  .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    
-    i {
-      font-size: 0.875rem;
-    }
-  }
+.eyebrow {
+    color: $blue;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    text-transform: uppercase
 }
 
-// Estilos para el card header
-.card-header {
-  .btn-outline-light {
-    &:hover {
-      color: #0d6efd;
-      background-color: white;
-    }
-  }
-  
-  .btn-light {
-    &:hover {
-      background-color: #f8f9fa;
-      border-color: #f8f9fa;
-    }
-  }
+.page-hero h1 {
+    margin: 5px 0 8px;
+    font-size: clamp(29px, 3vw, 40px);
+    font-weight: 780;
+    letter-spacing: -1px
 }
 
-// Estilos para badges pequeños (adicionales)
-.small-badge {
-  font-size: 0.7em;
-  padding: 0.2em 0.5em;
+.page-hero p {
+    max-width: 650px;
+    margin: 0;
+    color: $muted;
+    font-size: 14px
 }
 
-// Estilos para los textos pequeños
-.text-muted {
-  color: #6c757d !important;
-  
-  .small {
-    font-size: 0.875em;
-  }
+.page-hero__actions {
+    display: flex;
+    gap: 10px;
+    flex: 0 0 auto
 }
 
-// Estilos para las alertas
-.alert-info {
-  background-color: #d1ecf1;
-  border-color: #bee5eb;
-  color: #0c5460;
+.button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 17px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+    transition: .2s
 }
 
-// Estilos para el spinner de carga
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-  
-  &.text-primary {
-    color: #0d6efd !important;
-  }
+.button:hover {
+    transform: translateY(-2px)
 }
 
-// Estilos para la card
-.card {
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.375rem;
-  
-  .card-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-  }
-  
-  .card-footer {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-top: 1px solid rgba(0, 0, 0, 0.125);
-  }
+.button--primary {
+    background: $blue;
+    color: $white;
+    box-shadow: 0 8px 18px rgba($blue, .19)
 }
 
-// Estilos para los inputs
-.form-select,
-.form-control {
-  border: 1px solid #ced4da;
-  border-radius: 0.375rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  
-  &:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  }
+.button--secondary {
+    border-color: $border;
+    background: $white;
+    color: $navy
 }
 
-// Estilos para el input group
-.input-group {
-  .input-group-text {
-    background-color: #e9ecef;
-    border: 1px solid #ced4da;
-    color: #6c757d;
-  }
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px
 }
 
-// Estilos responsivos
-@media (max-width: 768px) {
-  .btn-group {
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 17px;
+    border: 1px solid $border;
+    border-radius: 13px;
+    background: $white;
+    color: $navy;
+    text-align: left;
+    box-shadow: 0 5px 15px rgba($navy, .045);
+    transition: .2s
+}
+
+.summary-card:hover,
+.summary-card.active {
+    border-color: rgba($blue, .35);
+    box-shadow: 0 8px 20px rgba($navy, .09);
+    transform: translateY(-2px)
+}
+
+.summary-card__icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 11px;
+    background: rgba($blue, .08);
+    color: $blue
+}
+
+.summary-card>span:last-child {
+    display: grid
+}
+
+.summary-card strong {
+    font-size: 22px;
+    line-height: 1
+}
+
+.summary-card small {
+    margin-top: 5px;
+    color: $muted;
+    font-size: 10px
+}
+
+.summary-card--pending .summary-card__icon {
+    background: #fff7d8;
+    color: #9b7200
+}
+
+.summary-card--approved .summary-card__icon {
+    background: #eaf8ef;
+    color: #238148
+}
+
+.summary-card--closed .summary-card__icon {
+    background: #edf0f5;
+    color: #657087
+}
+
+.workspace-card {
+    overflow: hidden;
+    border: 1px solid $border;
+    border-radius: 16px;
+    background: $white;
+    box-shadow: 0 10px 28px rgba($navy, .06)
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e9edf3
+}
+
+.search-control {
+    position: relative;
+    flex: 1;
+    max-width: 425px
+}
+
+.search-control i {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #8992a4;
+    transform: translateY(-50%)
+}
+
+.search-control input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 40px;
+    border: 1px solid $border;
+    border-radius: 9px;
+    outline: 0;
+    color: $navy;
+    font-size: 12px
+}
+
+.search-control input:focus {
+    border-color: $blue;
+    box-shadow: 0 0 0 3px rgba($blue, .08)
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 9px;
+    background: #f1f4f8
+}
+
+.filter-tabs button {
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: $muted;
+    font-size: 10px;
+    font-weight: 700
+}
+
+.filter-tabs button.active {
+    background: $white;
+    color: $blue;
+    box-shadow: 0 2px 7px rgba($navy, .1)
+}
+
+.reservation-card {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 22px;
+    padding: 23px;
+    border-bottom: 1px solid #e9edf3;
+    transition: .2s
+}
+
+.reservation-card:hover {
+    background: #fbfcfe
+}
+
+.reservation-card:last-child {
+    border-bottom: 0
+}
+
+.date-block {
+    align-self: start;
+    display: grid;
+    place-items: center;
+    padding: 10px 7px;
+    border: 1px solid $border;
+    border-top: 4px solid $yellow;
+    border-radius: 10px;
+    background: $white
+}
+
+.date-block strong {
+    font-size: 25px;
+    line-height: 1
+}
+
+.date-block span {
+    margin-top: 3px;
+    color: $blue;
+    font-size: 11px;
+    font-weight: 800
+}
+
+.date-block small {
+    color: $muted;
+    font-size: 9px
+}
+
+.reservation-main__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px
+}
+
+.reservation-main h2 {
+    margin: 6px 0 0;
+    font-size: 18px;
+    font-weight: 750
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase
+}
+
+.status i {
+    font-size: 6px
+}
+
+.status--pendiente {
+    color: #a07700
+}
+
+.status--aprobado {
+    color: #238148
+}
+
+.status--rechazado {
+    color: #bd3340
+}
+
+.status--cancelado {
+  color: #fff;
+  background: #5f6b7a;
+}
+
+.status--completado {
+    color: #657087
+}
+
+.card-actions {
+    display: flex;
+    gap: 5px
+}
+
+.card-actions a,
+.card-actions button {
+    display: grid;
+    width: 33px;
+    height: 33px;
+    place-items: center;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: $white;
+    color: $blue;
+    text-decoration: none
+}
+
+.card-actions button {
+    color: #bc3541
+}
+
+.description {
+    margin: 11px 0 16px;
+    color: $muted;
+    font-size: 12px;
+    line-height: 1.55
+}
+
+.reservation-meta {
+    display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
-    
-    .btn {
-      margin-bottom: 0.25rem;
+    gap: 28px
+}
+
+.reservation-meta>div {
+    display: flex;
+    align-items: center;
+    gap: 9px
+}
+
+.reservation-meta i {
+    color: $blue
+}
+
+.reservation-meta span {
+    display: grid
+}
+
+.reservation-meta small {
+    color: $muted;
+    font-size: 9px
+}
+
+.reservation-meta strong {
+    font-size: 11px
+}
+
+.reservation-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px
+}
+
+.reservation-tags span {
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: #edf3f9;
+    color: $blue;
+    font-size: 9px;
+    font-weight: 700
+}
+
+.rejection-note {
+    display: flex;
+    gap: 9px;
+    margin-top: 14px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff1f2;
+    color: #a82d39;
+    font-size: 11px
+}
+
+.rejection-note span {
+    display: grid
+}
+
+.loading-state,
+.empty-state {
+    display: grid;
+    min-height: 320px;
+    place-items: center;
+    align-content: center;
+    padding: 35px;
+    text-align: center
+}
+
+.loading-state .spinner-border {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 13px;
+    color: $blue
+}
+
+.loading-state p,
+.empty-state p {
+    max-width: 440px;
+    margin: 6px 0 18px;
+    color: $muted;
+    font-size: 12px
+}
+
+.empty-state>span {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    margin-bottom: 14px;
+    border-radius: 18px;
+    background: rgba($blue, .08);
+    color: $blue;
+    font-size: 24px
+}
+
+.empty-state h2 {
+    margin: 0;
+    font-size: 19px
+}
+
+.results-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 13px 22px;
+    border-top: 1px solid #e9edf3;
+    background: #fafbfd;
+    color: $muted;
+    font-size: 10px
+}
+
+@media(max-width:980px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr)
     }
-  }
-  
-  .card-header {
-    flex-direction: column;
-    gap: 1rem;
-    
-    h3 {
-      text-align: center;
+
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column
     }
-    
-    .d-flex {
-      justify-content: center;
+
+    .search-control {
+        max-width: none
     }
-  }
-  
-  .table-responsive {
-    margin-bottom: 1rem;
-    overflow-x: auto;
-    
-    table {
-      min-width: 800px;
+
+    .filter-tabs {
+        overflow-x: auto
     }
-  }
+
+    .filter-tabs button {
+        flex: 1;
+        white-space: nowrap
+    }
 }
 
-// Animaciones
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@media(max-width:650px) {
+    .page-hero {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .page-hero__actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr
+    }
+
+    .summary-grid {
+        gap: 9px
+    }
+
+    .summary-card {
+        padding: 12px
+    }
+
+    .summary-card__icon {
+        width: 36px;
+        height: 36px
+    }
+
+    .reservation-card {
+        grid-template-columns: 55px 1fr;
+        gap: 13px;
+        padding: 17px 13px
+    }
+
+    .date-block strong {
+        font-size: 20px
+    }
+
+    .reservation-main__heading {
+        gap: 8px
+    }
+
+    .reservation-main h2 {
+        font-size: 15px
+    }
+
+    .reservation-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px
+    }
+
+    .results-footer {
+        align-items: flex-start;
+        flex-direction: column
+    }
+
+    .filter-tabs button {
+        flex: 0 0 auto
+    }
+
+    .button {
+        padding: 0 10px
+    }
 }
 
-.table-hover tbody tr {
-  animation: fadeIn 0.3s ease-in;
+// Refuerzo de identidad institucional y legibilidad
+.page-hero {
+    padding: 22px 26px;
+    margin-bottom: 20px;
+    border-left: 6px solid $yellow;
+    border-radius: 15px;
+    background: linear-gradient(115deg, rgba($blue, .11), rgba($yellow, .13))
 }
-
-/* Importa estilos de Bootstrap si quieres personalizar */
-@import 'bootstrap/scss/bootstrap';
-
-/* Estilos globales */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f8f9fa;
-}
-
-/* Clases de utilidad personalizadas */
-.clickable {
-  cursor: pointer;
-  
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
-/* Estilos para scroll suave */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-  
-  &:hover {
-    background: #555;
-  }
-}
-
-/* Estilos para Material Angular */
-.mat-form-field {
-  width: 100%;
-}
-
-/* Responsive utilities */
-@media (max-width: 768px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
+.page-hero p { font-size: 16px; line-height: 1.55 }
+.summary-card--total { background: linear-gradient(135deg, #f5f9fd, #e8f1fa) }
+.summary-card--pending { background: linear-gradient(135deg, #fffdf3, #fff5c7) }
+.summary-card--approved { background: linear-gradient(135deg, #f4fbf7, #e5f5ec) }
+.summary-card--closed { background: linear-gradient(135deg, #f5f7fa, #e9edf3) }
+.summary-card strong { font-size: 26px }
+.summary-card small { font-size: 12px }
+.workspace-card { background: #edf3f8 }
+.toolbar { background: linear-gradient(100deg, #f5f9fd, #e6eff8) }
+.search-control input { background: #fafdff; font-size: 14px }
+.filter-tabs button { font-size: 12px }
+.reservation-card { background: #f8fbfe }
+.reservation-card:nth-child(even) { background: #eef5fb }
+.reservation-card:hover { background: #e8f2fa }
+.date-block { background: #fffdf5 }
+.reservation-main h2 { font-size: 20px }
+.status { font-size: 11px }
+.description { font-size: 14px }
+.reservation-meta small { font-size: 11px }
+.reservation-meta strong { font-size: 13px }
+.reservation-tags span { font-size: 11px }
+.rejection-note { font-size: 13px }
+.results-footer { background: #dfeaf4; font-size: 12px }
+.empty-state p, .loading-state p { font-size: 14px }
+.empty-state h2 { font-size: 22px }

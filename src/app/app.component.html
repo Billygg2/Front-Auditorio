@@ -1,26 +1,39 @@
-<!-- Header -->
-<app-header></app-header>
+<ng-container *ngIf="!isAuthPage; else authLayout">
+  <app-header></app-header>
+  <main class="app-content"><router-outlet></router-outlet></main>
 
-<!-- Contenido principal -->
-<main class="container-fluid py-4">
-  <router-outlet></router-outlet>
-</main>
+  <footer class="site-footer">
+    <div class="footer-accent" aria-hidden="true"></div>
+    <div class="site-footer__main">
+      <section class="footer-brand">
+        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png" alt="Universidad Iberoamericana del Ecuador">
+        <p>Plataforma institucional para consultar la disponibilidad y gestionar las reservas del auditorio universitario.</p>
+      </section>
 
-<!-- Footer -->
-<footer class="footer bg-light mt-5 py-3 border-top">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <span class="text-muted">
-          <i class="fas fa-university me-1"></i>
-          Sistema de Reservas de Auditorio - UNIBE © 2026
-        </span>
-      </div>
-      <div class="col-md-6 text-end">
-        <span class="text-muted">
-          v1.0.0 | <i class="fas fa-code me-1"></i> Desarrollado con Angular & Spring Boot
-        </span>
-      </div>
+      <nav class="footer-section" aria-label="Enlaces del sistema">
+        <h2>Sistema de reservas</h2>
+        <a routerLink="/eventos/calendario">Consultar calendario</a>
+        <a routerLink="/eventos">Mis reservas</a>
+        <a routerLink="/eventos/nuevo">Nueva solicitud</a>
+      </nav>
+
+      <section class="footer-section">
+        <h2>Información importante</h2>
+        <p><i class="far fa-clock"></i><span><strong>Horario del auditorio</strong>08:00 a 20:00</span></p>
+        <p><i class="far fa-calendar-check"></i><span><strong>Anticipación mínima</strong>14 días antes del evento</span></p>
+      </section>
+
+      <section class="footer-section">
+        <h2>Universidad</h2>
+        <p><i class="fas fa-location-dot"></i><span><strong>UNIB.E</strong>Quito, Ecuador</span></p>
+        <p><i class="fas fa-shield-halved"></i><span><strong>Acceso institucional</strong>Información protegida</span></p>
+      </section>
     </div>
-  </div>
-</footer>
+    <div class="site-footer__bottom">
+      <span>© 2026 Universidad Iberoamericana del Ecuador</span>
+      <span>Sistema de Reservas del Auditorio · v1.0.0</span>
+    </div>
+  </footer>
+</ng-container>
+
+<ng-template #authLayout><router-outlet></router-outlet></ng-template>

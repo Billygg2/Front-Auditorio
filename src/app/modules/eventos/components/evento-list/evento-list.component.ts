@@ -14,136 +14,121 @@ export class EventoListComponent implements OnInit {
   loading = false;
   esAdmin = false;
   today = new Date();
-  // Filtros
-  filtroEstado: string = '';
   filtroBusqueda: string = '';
-  estados = Object.values(EstadoEvento);
+  filtroEstado: string = '';
+  paginaActual = 0;
+  tamanioPagina = 5;
+  totalElementos = 0;
+  totalPaginas = 0;
 
   constructor(
     private eventoService: EventoService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.esAdmin = this.authService.isAdmin();
+    this.cargarResumen();
     this.cargarEventos();
   }
 
-  // ========== MÉTODOS DE CARGA ==========
-  
-  cargarEventos(): void {
-    this.loading = true;
-    
-    const request = this.esAdmin 
+  cargarResumen(): void {
+    const request = this.esAdmin
       ? this.eventoService.listarTodosEventos()
       : this.eventoService.listarMisEventos();
+    request.subscribe({ next: eventos => this.eventos = eventos });
+  }
 
-    request.subscribe({
-      next: (eventos) => {
-        this.eventos = eventos;
-        this.eventosFiltrados = [...eventos];
-        this.aplicarFiltros();
+  cargarEventos(): void {
+    this.loading = true;
+    this.eventoService.listarEventosPaginados(
+      this.paginaActual,
+      this.tamanioPagina,
+      this.filtroBusqueda,
+      this.filtroEstado
+    ).subscribe({
+      next: pagina => {
+        this.eventosFiltrados = pagina.contenido;
+        this.totalElementos = pagina.totalElementos;
+        this.totalPaginas = pagina.totalPaginas;
       },
       error: (err) => {
-        alert('Error cargando eventos');
+        this.loading = false;
+        alert('Error al cargar las reservas');
         console.error(err);
       },
       complete: () => this.loading = false
     });
   }
 
-  cargarPendientes(): void {
-    if (!this.esAdmin) return;
-    
-    this.loading = true;
-    this.eventoService.listarEventosPendientes().subscribe({
-      next: (eventos) => {
-        this.eventos = eventos;
-        this.eventosFiltrados = [...eventos];
-        this.filtroEstado = 'PENDIENTE';
-      },
-      error: (err) => console.error(err),
-      complete: () => this.loading = false
-    });
+  cargarTodos(): void {
+    this.filtroEstado = '';
+    this.filtroBusqueda = '';
+    this.paginaActual = 0;
+    this.cargarEventos();
   }
 
-  cargarAprobados(): void {
-    this.loading = true;
-    this.eventoService.listarEventosAprobados().subscribe({
-      next: (eventos) => {
-        this.eventos = eventos;
-        this.eventosFiltrados = [...eventos];
-        this.filtroEstado = 'APROBADO';
-      },
-      error: (err) => console.error(err),
-      complete: () => this.loading = false
-    });
+  cargarPorEstado(estado: string): void {
+    this.filtroEstado = estado;
+    this.paginaActual = 0;
+    this.cargarEventos();
   }
 
-  // ========== MÉTODOS DE FILTRO ==========
-  
   aplicarFiltros(): void {
-    let filtrados = [...this.eventos];
+    this.paginaActual = 0;
+    this.cargarEventos();
+  }
 
-    // Filtrar por estado
-    if (this.filtroEstado) {
-      filtrados = filtrados.filter(e => 
-        e.estado.toString() === this.filtroEstado
-      );
-    }
+  cambiarPagina(pagina: number): void {
+    this.paginaActual = pagina;
+    this.cargarEventos();
+  }
 
-    // Filtrar por búsqueda
-    if (this.filtroBusqueda) {
-      const busqueda = this.filtroBusqueda.toLowerCase();
-      filtrados = filtrados.filter(e =>
-        e.nombreEvento.toLowerCase().includes(busqueda) ||
-        e.descripcion.toLowerCase().includes(busqueda) ||
-        e.responsable?.nombre.toLowerCase().includes(busqueda)
-      );
-    }
-
-    this.eventosFiltrados = filtrados;
+  cambiarTamanio(tamanio: number): void {
+    this.tamanioPagina = tamanio;
+    this.paginaActual = 0;
+    this.cargarEventos();
   }
 
   limpiarFiltros(): void {
-    this.filtroEstado = '';
     this.filtroBusqueda = '';
-    this.eventosFiltrados = [...this.eventos];
+    this.filtroEstado = '';
+    this.aplicarFiltros();
   }
 
-  // ========== MÉTODOS DE ACCIÓN ==========
-  
+  contarPorEstado(estado: string): number {
+    return this.eventos.filter(evento => evento.estado === estado).length;
+  }
+
+  obtenerParteFecha(fecha: string | Date, parte: 'dia' | 'mes' | 'anio'): string {
+    if (!fecha) return '--';
+    let fechaLocal: Date;
+    if (typeof fecha === 'string') {
+      const [anio, mes, dia] = fecha.split('T')[0].split('-').map(Number);
+      fechaLocal = new Date(anio, mes - 1, dia);
+    } else {
+      fechaLocal = new Date(fecha);
+    }
+    if (parte === 'dia') return String(fechaLocal.getDate()).padStart(2, '0');
+    if (parte === 'anio') return String(fechaLocal.getFullYear());
+    return fechaLocal.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '').toUpperCase();
+  }
+
   eliminarEvento(id: number): void {
     if (!confirm('¿Está seguro de eliminar este evento?')) return;
-    
     this.eventoService.eliminarEvento(id).subscribe({
       next: () => {
         alert('Evento eliminado correctamente');
+        this.cargarResumen();
         this.cargarEventos();
       },
-      error: (err) => {
+      error: (err: any) => {
         alert('Error eliminando evento');
         console.error(err);
       }
     });
   }
 
-  cancelarEvento(id: number): void {
-    const motivo = prompt('Ingrese el motivo de la cancelación (opcional):');
-    this.eventoService.cancelarEvento(id, motivo || undefined).subscribe({
-      next: () => {
-        alert('Evento cancelado correctamente');
-        this.cargarEventos();
-      },
-      error: (err) => {
-        alert('Error cancelando evento');
-        console.error(err);
-      }
-    });
-  }
-
-  // ========== MÉTODOS AUXILIARES ==========
-  
   getEstadoBadgeClass(estado: EstadoEvento): string {
     return this.eventoService.getEstadoBadgeClass(estado);
   }
@@ -153,60 +138,34 @@ export class EventoListComponent implements OnInit {
   }
 
   puedeEditar(evento: EventoAuditorio): boolean {
-    if (this.esAdmin) return true;
-    return evento.estado === EstadoEvento.PENDIENTE || 
-           evento.estado === EstadoEvento.RECHAZADO;
+    if (!this.esAdmin) return false;
+    return evento.estado !== EstadoEvento.COMPLETADO &&
+      evento.estado !== EstadoEvento.RECHAZADO &&
+      evento.estado !== EstadoEvento.CANCELADO;
   }
 
   puedeEliminar(evento: EventoAuditorio): boolean {
-    if (this.esAdmin) return true;
-    return evento.estado === EstadoEvento.PENDIENTE || 
-           evento.estado === EstadoEvento.RECHAZADO;
+    return evento.estado === EstadoEvento.PENDIENTE ||
+      evento.estado === EstadoEvento.RECHAZADO;
   }
 
-  puedeCancelar(evento: EventoAuditorio): boolean {
-    return evento.estado === EstadoEvento.PENDIENTE || 
-           evento.estado === EstadoEvento.APROBADO;
-  }
-
-  /**
-   * MÉTODO CORREGIDO: Formatea fecha correctamente sin problemas de zona horaria
-   * Convierte string YYYY-MM-DD a fecha local sin ajuste de timezone
-   */
   formatearFecha(fecha: string | Date): string {
     if (!fecha) return 'N/A';
-    
     if (typeof fecha === 'string') {
-      // Si viene como string "YYYY-MM-DD", parsearlo manualmente
-      // para evitar problemas de zona horaria
       const [year, month, day] = fecha.split('T')[0].split('-').map(Number);
       const fechaLocal = new Date(year, month - 1, day);
       return fechaLocal.toLocaleDateString('es-EC', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        year: 'numeric', month: '2-digit', day: '2-digit'
       });
     }
-    
     return new Date(fecha).toLocaleDateString('es-EC', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
+      year: 'numeric', month: '2-digit', day: '2-digit'
     });
   }
 
-  /**
-   * MÉTODO CORREGIDO: Formatea hora correctamente
-   */
   formatearHora(hora: string | Date): string {
     if (!hora) return 'N/A';
-    
-    if (typeof hora === 'string') {
-      // Si viene como "HH:mm:ss" o "HH:mm", tomar solo HH:mm
-      return hora.substring(0, 5);
-    }
-    
-    // Si es Date, extraer hora y minutos
+    if (typeof hora === 'string') return hora.substring(0, 5);
     const horaDate = new Date(hora);
     const horas = horaDate.getHours().toString().padStart(2, '0');
     const minutos = horaDate.getMinutes().toString().padStart(2, '0');

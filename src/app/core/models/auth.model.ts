@@ -5,7 +5,7 @@ export interface AuthRequest {
   nombre: string;           
   apellido: string;        
   correoInstitucional: string; 
-  telefono: string;         
+  telefono: string;
 }
 
 export interface AuthResponse {
@@ -17,6 +17,8 @@ export interface AuthResponse {
   role: string;             
   correoInstitucional: string;
   telefono: string;
+  activo?: boolean;
+  debeCambiarPassword?: boolean;
 }
 
 export interface User {
@@ -27,6 +29,8 @@ export interface User {
   nombreCompleto: string;
   correoInstitucional: string;
   telefono: string;
+  activo?: boolean;
+  debeCambiarPassword?: boolean;
 }
 
 export interface DecodedToken {

@@ -1,3 +1,4 @@
+// MÓDULO DE CUENTA: contiene la consulta y actualización de información personal.
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';

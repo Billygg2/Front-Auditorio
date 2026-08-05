@@ -1,133 +1,290 @@
-<section class="reservation-form-page" aria-labelledby="form-title">
-  <header class="page-hero">
+<main class="reservation-form-page container-xxl px-0" aria-labelledby="form-title">
+  <header class="page-hero d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 p-4 mb-3">
     <div>
       <span class="eyebrow">{{ isEditMode ? 'Gestión de solicitud' : 'Reserva del auditorio' }}</span>
-      <h1 id="form-title">{{ isEditMode ? 'Editar reserva' : 'Crear nueva reserva' }}</h1>
-      <p>{{ isEditMode ? 'Actualiza la información permitida y guarda los cambios.' : 'Completa la información para enviar tu solicitud a revisión.' }}</p>
+      <h1 id="form-title" class="my-1">{{ isEditMode ? 'Editar reserva' : 'Crear nueva reserva' }}</h1>
+      <p class="mb-0">{{ isEditMode ? 'Actualiza la información permitida y guarda los cambios.' : 'Completa la información para enviar tu solicitud a revisión.' }}</p>
     </div>
-    <a routerLink="/eventos/calendario" class="calendar-link"><i class="far fa-calendar"></i> Consultar calendario</a>
+    <a routerLink="/eventos/calendario" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+      <i class="far fa-calendar" aria-hidden="true"></i>Consultar calendario
+    </a>
   </header>
 
-  <div *ngIf="isEditMode && !puedeEditar" class="page-alert page-alert--warning" role="alert">
-    <i class="fas fa-lock"></i><div><strong>Esta reserva no puede modificarse</strong><p>{{ mensajeNoEditable }}</p></div>
+  <div *ngIf="isEditMode && !puedeEditar" class="alert alert-warning d-flex gap-3" role="alert">
+    <i class="fas fa-lock mt-1" aria-hidden="true"></i>
+    <div><strong>Esta reserva no puede modificarse</strong><p class="mb-0">{{ mensajeNoEditable }}</p></div>
   </div>
 
-  <div *ngIf="loading" class="loading-card" role="status">
-    <span class="spinner-border"></span><h2>{{ isEditMode ? 'Cargando la reserva' : 'Procesando tu solicitud' }}</h2><p>Espera un momento, por favor.</p>
+  <div *ngIf="loading" class="loading-card card d-flex flex-column align-items-center justify-content-center text-center">
+    <span class="spinner-border" aria-hidden="true"></span>
+    <h2 class="mt-3 mb-1">{{ isEditMode ? 'Cargando la reserva' : 'Procesando tu solicitud' }}</h2>
+    <p class="mb-0">Espera un momento, por favor.</p>
   </div>
 
-  <form *ngIf="!loading" [formGroup]="eventoForm" (ngSubmit)="onSubmit()" novalidate class="form-layout">
-    <div class="form-content">
-      <section class="form-section form-section--information">
-        <header class="section-heading"><span>1</span><div><h2>Información del evento</h2><p>Cuéntanos qué actividad se realizará en el auditorio.</p></div></header>
-        <div class="fields-grid">
-          <div class="form-field form-field--wide">
-            <label for="nombreEvento">Nombre del evento <em>*</em></label>
-            <input id="nombreEvento" type="text" formControlName="nombreEvento" autocomplete="off" placeholder="Ej. Conferencia de innovación educativa"
-                    [class.invalid]="nombreEvento.invalid && nombreEvento.touched">
-            <div class="field-error" *ngIf="nombreEvento.touched && nombreEvento.hasError('required')">Ingresa el nombre del evento.</div>
-            <div class="field-error" *ngIf="nombreEvento.touched && nombreEvento.hasError('minlength')">Utiliza al menos 3 caracteres.</div>
-            <div class="field-error" *ngIf="nombreEvento.touched && nombreEvento.hasError('maxlength')">El máximo permitido es de 200 caracteres.</div>
-          </div>
+  <form *ngIf="!loading" [formGroup]="eventoForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="row g-3">
+      <div class="col-12 col-xl-9 d-flex flex-column gap-3">
+        <!-- PASO 1: información general y características del evento. -->
+        <section class="form-section card order-1">
+          <header class="card-header section-heading d-flex align-items-center gap-3 p-3">
+            <span>1</span>
+            <div><h2 class="mb-1">Información del evento</h2><p class="mb-0">Cuéntanos qué actividad se realizará en el auditorio.</p></div>
+          </header>
+          <div class="card-body p-3 p-md-4">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold" for="nombreEvento">Nombre del evento <em>*</em></label>
+                <input id="nombreEvento" class="form-control" type="text" formControlName="nombreEvento"
+                  autocomplete="off" placeholder="Ej. Conferencia de innovación educativa"
+                  [class.is-invalid]="nombreEvento.invalid && nombreEvento.touched">
+                <div class="invalid-feedback" *ngIf="nombreEvento.touched && nombreEvento.hasError('required')">Ingresa el nombre del evento.</div>
+                <div class="invalid-feedback" *ngIf="nombreEvento.touched && nombreEvento.hasError('minlength')">Utiliza al menos 3 caracteres.</div>
+                <div class="invalid-feedback" *ngIf="nombreEvento.touched && nombreEvento.hasError('maxlength')">El máximo permitido es de 200 caracteres.</div>
+              </div>
 
-          <div class="form-field form-field--wide">
-            <div class="label-row"><label for="descripcion">Descripción <em>*</em></label><small>{{ descripcion.value?.length || 0 }}/500</small></div>
-            <textarea id="descripcion" rows="4" formControlName="descripcion" placeholder="Describe el propósito, las actividades y cualquier detalle importante del evento."
-                      [class.invalid]="descripcion.invalid && descripcion.touched"></textarea>
-            <div class="field-error" *ngIf="descripcion.touched && descripcion.hasError('required')">Agrega una descripción del evento.</div>
-            <div class="field-error" *ngIf="descripcion.touched && descripcion.hasError('minlength')">La descripción debe tener al menos 10 caracteres.</div>
-            <div class="field-error" *ngIf="descripcion.touched && descripcion.hasError('maxlength')">El máximo permitido es de 500 caracteres.</div>
-          </div>
+              <div class="col-12">
+                <div class="d-flex justify-content-between">
+                  <label class="form-label fw-semibold" for="descripcion">Descripción <em>*</em></label>
+                  <small class="text-secondary">{{ descripcion.value?.length || 0 }}/500</small>
+                </div>
+                <textarea id="descripcion" class="form-control" rows="4" formControlName="descripcion"
+                  placeholder="Describe el propósito, las actividades y cualquier detalle importante del evento."
+                  [class.is-invalid]="descripcion.invalid && descripcion.touched"></textarea>
+                <div class="invalid-feedback" *ngIf="descripcion.touched && descripcion.hasError('required')">Agrega una descripción del evento.</div>
+                <div class="invalid-feedback" *ngIf="descripcion.touched && descripcion.hasError('minlength')">La descripción debe tener al menos 10 caracteres.</div>
+                <div class="invalid-feedback" *ngIf="descripcion.touched && descripcion.hasError('maxlength')">El máximo permitido es de 500 caracteres.</div>
+              </div>
 
-          <div class="form-field">
-            <label for="numeroAsistentes">Número de asistentes <em>*</em></label>
-            <div class="input-with-icon"><i class="fas fa-users"></i><input id="numeroAsistentes" type="number" formControlName="numeroAsistentes" min="1" max="500" [class.invalid]="numeroAsistentes.invalid && numeroAsistentes.touched"></div>
-            <small>Capacidad máxima: 500 personas.</small>
-            <div class="field-error" *ngIf="numeroAsistentes.touched && numeroAsistentes.invalid">Ingresa una cantidad entre 1 y 500.</div>
-          </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold" for="numeroAsistentes">Número de asistentes <em>*</em></label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-users" aria-hidden="true"></i></span>
+                  <input id="numeroAsistentes" class="form-control" type="number" formControlName="numeroAsistentes"
+                    min="1" max="500" [class.is-invalid]="numeroAsistentes.invalid && numeroAsistentes.touched">
+                </div>
+                <div class="form-text">Capacidad máxima: 500 personas.</div>
+                <div class="field-error" *ngIf="numeroAsistentes.touched && numeroAsistentes.invalid">Ingresa una cantidad entre 1 y 500.</div>
+              </div>
 
-          <div class="form-field">
-            <label for="tipoDisposicion">Disposición del auditorio <em>*</em></label>
-            <select id="tipoDisposicion" formControlName="tipoDisposicion" [class.invalid]="tipoDisposicion.invalid && tipoDisposicion.touched">
-              <option value="AULA">Aula — mesas individuales</option><option value="TEATRO">Teatro — solo sillas</option><option value="CONFERENCIA">Conferencia — mesa principal y sillas</option><option value="U">En U — mesas en forma de U</option><option value="CABALLERO">Caballero — mesas paralelas</option><option value="CIRCULO">Círculo — mesas en círculo</option>
-            </select>
-            <small>Elige la distribución que mejor se adapte a tu actividad.</small>
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold" for="tipoDisposicion">Disposición del auditorio <em>*</em></label>
+                <select id="tipoDisposicion" class="form-select" formControlName="tipoDisposicion"
+                  [class.is-invalid]="tipoDisposicion.invalid && tipoDisposicion.touched">
+                  <option value="AULA">Aula — mesas individuales</option>
+                  <option value="TEATRO">Teatro — solo sillas</option>
+                  <option value="CONFERENCIA">Conferencia — mesa principal y sillas</option>
+                  <option value="U">En U — mesas en forma de U</option>
+                  <option value="CABALLERO">Caballero — mesas paralelas</option>
+                  <option value="CIRCULO">Círculo — mesas en círculo</option>
+                </select>
+                <div class="form-text">Elige la distribución que mejor se adapte a tu actividad.</div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="option-card d-flex align-items-center gap-3 h-100 p-3" for="publicoExterno">
+                  <input class="form-check-input m-0" type="checkbox" id="publicoExterno" formControlName="publicoExterno">
+                  <span><strong class="d-block">Público externo</strong><small>Participarán personas ajenas a la universidad.</small></span>
+                </label>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="option-card d-flex align-items-center gap-3 h-100 p-3" for="requiereRegistroPrevio">
+                  <input class="form-check-input m-0" type="checkbox" id="requiereRegistroPrevio" formControlName="requiereRegistroPrevio">
+                  <span><strong class="d-block">Registro previo</strong><small>Los asistentes deberán registrarse antes del evento.</small></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASO 2: datos de la persona responsable. -->
+        <section class="form-section card order-2" formGroupName="responsable">
+          <header class="card-header section-heading d-flex align-items-center gap-3 p-3">
+            <span>2</span>
+            <div><h2 class="mb-1">Persona responsable</h2><p class="mb-0">Estos datos se utilizarán para coordinar la reserva.</p></div>
+          </header>
+          <div class="card-body p-3 p-md-4">
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="responsableNombre">Nombre completo <em>*</em></label>
+                <input id="responsableNombre" class="form-control" type="text" formControlName="nombre"
+                  autocomplete="name" placeholder="Nombre y apellido"
+                  [class.is-invalid]="responsableNombre.invalid && responsableNombre.touched">
+                <div class="invalid-feedback">Ingresa al menos 3 caracteres.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="responsableCorreo">Correo electrónico <em>*</em></label>
+                <input id="responsableCorreo" class="form-control" type="email" formControlName="correo"
+                  autocomplete="email" placeholder="usuario@unibe.edu.ec"
+                  [class.is-invalid]="responsableCorreo.invalid && responsableCorreo.touched">
+                <div class="invalid-feedback">Ingresa un correo electrónico válido.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="responsableTelefono">Teléfono <em>*</em></label>
+                <input id="responsableTelefono" class="form-control" type="tel" formControlName="telefono"
+                  autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="0987654321"
+                  [class.is-invalid]="responsableTelefono.invalid && responsableTelefono.touched">
+                <div class="invalid-feedback">Ingresa exactamente 10 dígitos.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASO 3: recursos técnicos opcionales. -->
+        <section class="form-section card order-3">
+          <header class="card-header section-heading d-flex flex-wrap align-items-center gap-3 p-3">
+            <span>3</span>
+            <div class="flex-grow-1"><h2 class="mb-1">Recursos técnicos</h2><p class="mb-0">Añade únicamente los equipos necesarios. Esta sección es opcional.</p></div>
+            <button type="button" class="btn btn-primary btn-sm" (click)="agregarRequerimiento()">
+              <i class="fas fa-plus me-1" aria-hidden="true"></i>Agregar recurso
+            </button>
+          </header>
+          <div class="card-body p-3" formArrayName="requerimientos">
+            <div *ngIf="requerimientos.length === 0"
+              class="requirements-empty d-flex align-items-center justify-content-center gap-3 p-4 text-center">
+              <i class="fas fa-box-open" aria-hidden="true"></i>
+              <span><strong class="d-block">Sin recursos adicionales</strong><small>Puedes enviar la solicitud sin agregar equipos.</small></span>
+            </div>
+
+            <div *ngFor="let req of requerimientos.controls; let i = index" [formGroupName]="i"
+              class="requirement-row card mb-2 p-3">
+              <div class="row g-3 align-items-end">
+                <div class="col-auto"><span class="requirement-number">{{ i + 1 }}</span></div>
+                <div class="col-12 col-md">
+                  <label class="form-label fw-semibold" [for]="'tipo-' + i">Equipo o recurso <em>*</em></label>
+                  <select class="form-select" [id]="'tipo-' + i" formControlName="tipo" [compareWith]="compararTipos"
+                    [class.is-invalid]="requerimientos.at(i).get('tipo')!.invalid && requerimientos.at(i).get('tipo')!.touched">
+                    <option [ngValue]="null" disabled>Selecciona un tipo</option>
+                    <option *ngFor="let tipo of tiposRequerimiento" [ngValue]="tipo">{{ tipo.nombre }}</option>
+                  </select>
+                  <div class="invalid-feedback">Selecciona un recurso.</div>
+                </div>
+                <div class="col-12 col-sm-5 col-md-3">
+                  <label class="form-label fw-semibold" [for]="'cantidad-' + i">
+                    Cantidad <small *ngIf="requerimientos.at(i).get('tipo')!.value">Máx. {{ cantidadDisponibleRecurso(i) }}</small>
+                  </label>
+                  <input class="form-control" [id]="'cantidad-' + i" type="number" min="1" formControlName="cantidad"
+                    [max]="cantidadDisponibleRecurso(i)"
+                    [class.is-invalid]="requerimientos.at(i).get('cantidad')!.invalid && requerimientos.at(i).get('cantidad')!.touched">
+                  <div class="invalid-feedback">Revisa la cantidad disponible.</div>
+                </div>
+                <div class="col-12 col-sm d-flex align-items-center">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'requerido-' + i" formControlName="requerido">
+                    <label class="form-check-label fw-semibold" [for]="'requerido-' + i">Es indispensable</label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-outline-danger" (click)="eliminarRequerimiento(i)"
+                    title="Eliminar recurso" aria-label="Eliminar recurso">
+                    <i class="far fa-trash-can" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASO 4: fecha, horario y verificación de disponibilidad. -->
+        <section class="form-section card order-4">
+          <header class="card-header section-heading d-flex align-items-center gap-3 p-3">
+            <span>4</span>
+            <div><h2 class="mb-1">Fecha, horario y disponibilidad</h2><p class="mb-0">Como último paso, selecciona el horario y comprueba que el auditorio esté disponible.</p></div>
+          </header>
+          <div class="card-body p-3 p-md-4">
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="fechaEvento">Fecha del evento <em>*</em></label>
+                <input id="fechaEvento" class="form-control" type="date" formControlName="fechaEvento"
+                  [min]="minDate" [max]="maxDate" [class.is-invalid]="fechaEvento.invalid && fechaEvento.touched">
+                <div class="form-text">Desde {{ minDate | date:'dd/MM/yyyy' }} hasta {{ maxDate | date:'dd/MM/yyyy' }}.</div>
+                <div class="field-error" *ngIf="fechaEvento.touched && fechaEvento.hasError('required')">Selecciona una fecha.</div>
+                <div class="field-error" *ngIf="fechaEvento.touched && fechaEvento.hasError('fechaMinima')">Debe tener al menos 14 días de anticipación.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="horaInicio">Hora de inicio <em>*</em></label>
+                <input id="horaInicio" class="form-control" type="time" formControlName="horaInicio"
+                  min="08:00" max="20:00" step="1800" [class.is-invalid]="horaInicio.invalid && horaInicio.touched">
+                <div class="form-text">Disponible desde las 08:00.</div>
+                <div class="field-error" *ngIf="horaInicio.touched && horaInicio.invalid">Ingresa una hora entre 08:00 y 20:00.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold" for="horaFin">Hora de finalización <em>*</em></label>
+                <input id="horaFin" class="form-control" type="time" formControlName="horaFin"
+                  min="08:00" max="20:00" step="1800" [class.is-invalid]="horaFin.invalid && horaFin.touched">
+                <div class="form-text">Duración máxima permitida: 8 horas.</div>
+                <div class="field-error" *ngIf="horaFin.touched && horaFin.invalid">Ingresa una hora entre 08:00 y 20:00.</div>
+              </div>
+            </div>
+
+            <div *ngIf="eventoForm.hasError('horaFinAnterior')" class="alert alert-danger mt-3 mb-0">
+              <i class="fas fa-circle-exclamation me-2" aria-hidden="true"></i>La hora de finalización debe ser posterior a la hora de inicio.
+            </div>
+
+            <div class="availability-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 p-3 mt-3">
+              <div class="d-flex align-items-center gap-3">
+                <span class="availability-icon"><i class="far fa-calendar-check" aria-hidden="true"></i></span>
+                <div><h3 class="mb-1">Comprueba el horario</h3><p class="mb-0">Verifica que no exista otra solicitud aprobada o pendiente en la misma fecha.</p></div>
+              </div>
+              <button type="button" class="btn btn-primary" (click)="verificarDisponibilidad()"
+                [disabled]="!fechaEvento.value || !horaInicio.value || !horaFin.value || eventoForm.invalid">
+                <i class="fas fa-magnifying-glass me-1" aria-hidden="true"></i>Verificar disponibilidad
+              </button>
+            </div>
+
+            <div *ngIf="disponibilidadVerificada" class="availability-result alert d-flex gap-2 mt-2 mb-0"
+              [class.alert-success]="disponible" [class.alert-danger]="!disponible">
+              <i class="fas mt-1" [class.fa-circle-check]="disponible" [class.fa-circle-xmark]="!disponible" aria-hidden="true"></i>
+              <span><strong class="d-block">{{ disponible ? 'Horario disponible' : 'Horario no disponible' }}</strong>{{ disponible ? 'Puedes continuar con la solicitud.' : 'Selecciona otra fecha u horario.' }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- AYUDA LATERAL: condiciones, flujo de revisión y tiempo de respuesta. -->
+      <aside class="col-12 col-xl-3 d-flex flex-column gap-3">
+        <section class="sidebar-card sidebar-card--highlight card p-3">
+          <span class="sidebar-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span>
+          <h2 class="mt-3">Antes de enviar</h2>
+          <p class="mb-0">Revisa que los datos sean correctos. La solicitud será evaluada por la administración.</p>
+        </section>
+        <section class="sidebar-card card p-3">
+          <h2>Condiciones de reserva</h2>
+          <ul class="list-unstyled d-grid gap-2 mb-0">
+            <li><i class="fas fa-check me-2" aria-hidden="true"></i><strong>14 días</strong> de anticipación mínima</li>
+            <li><i class="fas fa-check me-2" aria-hidden="true"></i>Horario de <strong>08:00 a 20:00</strong></li>
+            <li><i class="fas fa-check me-2" aria-hidden="true"></i>Máximo <strong>8 horas</strong> por evento</li>
+            <li><i class="fas fa-check me-2" aria-hidden="true"></i>Capacidad máxima de <strong>500 personas</strong></li>
+          </ul>
+        </section>
+        <section class="sidebar-card process-card card p-3">
+          <h2>¿Qué sucede después?</h2>
+          <div class="d-flex gap-2 mt-3"><span>1</span><p class="mb-0"><strong class="d-block">Envío</strong>Tu solicitud queda pendiente.</p></div>
+          <div class="d-flex gap-2 mt-3"><span>2</span><p class="mb-0"><strong class="d-block">Revisión</strong>La administración valida los datos.</p></div>
+          <div class="d-flex gap-2 mt-3"><span>3</span><p class="mb-0"><strong class="d-block">Respuesta</strong>Recibirás la confirmación correspondiente.</p></div>
+        </section>
+        <div class="sidebar-note d-flex align-items-center gap-2 p-3">
+          <i class="far fa-clock" aria-hidden="true"></i>
+          <span><strong class="d-block">Tiempo estimado de respuesta</strong>3 a 5 días hábiles</span>
+        </div>
+      </aside>
+
+      <footer class="col-12">
+        <div class="form-actions d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2 p-3">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+            <i class="fas fa-xmark me-1" aria-hidden="true"></i>Cancelar
+          </button>
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="button" class="btn btn-outline-primary" (click)="router.navigate(['/eventos/calendario'])">
+              <i class="far fa-calendar me-1" aria-hidden="true"></i>Ver calendario
+            </button>
+            <button type="submit" class="btn btn-primary"
+              [disabled]="eventoForm.invalid || loading || (isEditMode && !puedeEditar)">
+              <i class="fas me-1" [class.fa-floppy-disk]="isEditMode" [class.fa-paper-plane]="!isEditMode" aria-hidden="true"></i>
+              {{ isEditMode ? 'Guardar cambios' : 'Enviar solicitud' }}
+            </button>
           </div>
         </div>
-
-        <div class="options-grid">
-          <label class="option-card" for="publicoExterno"><input type="checkbox" id="publicoExterno" formControlName="publicoExterno"><span class="check-box"><i class="fas fa-check"></i></span><span><strong>Público externo</strong><small>Participarán personas ajenas a la universidad.</small></span></label>
-          <label class="option-card" for="requiereRegistroPrevio"><input type="checkbox" id="requiereRegistroPrevio" formControlName="requiereRegistroPrevio"><span class="check-box"><i class="fas fa-check"></i></span><span><strong>Registro previo</strong><small>Los asistentes deberán registrarse antes del evento.</small></span></label>
-        </div>
-      </section>
-
-      <section class="form-section form-section--schedule">
-        <header class="section-heading"><span>4</span><div><h2>Fecha, horario y disponibilidad</h2><p>Como último paso, selecciona el horario y comprueba que el auditorio esté disponible.</p></div></header>
-        <div class="fields-grid fields-grid--three">
-          <div class="form-field">
-            <label for="fechaEvento">Fecha del evento <em>*</em></label>
-            <input id="fechaEvento" type="date" formControlName="fechaEvento" [min]="minDate" [max]="maxDate" [class.invalid]="fechaEvento.invalid && fechaEvento.touched">
-            <small>Desde {{ minDate | date:'dd/MM/yyyy' }} hasta {{ maxDate | date:'dd/MM/yyyy' }}.</small>
-            <div class="field-error" *ngIf="fechaEvento.touched && fechaEvento.hasError('required')">Selecciona una fecha.</div>
-            <div class="field-error" *ngIf="fechaEvento.touched && fechaEvento.hasError('fechaMinima')">Debe tener al menos 14 días de anticipación.</div>
-          </div>
-          <div class="form-field">
-            <label for="horaInicio">Hora de inicio <em>*</em></label>
-            <input id="horaInicio" type="time" formControlName="horaInicio" min="08:00" max="20:00" step="1800" [class.invalid]="horaInicio.invalid && horaInicio.touched">
-            <small>Disponible desde las 08:00.</small>
-            <div class="field-error" *ngIf="horaInicio.touched && horaInicio.invalid">Ingresa una hora entre 08:00 y 20:00.</div>
-          </div>
-          <div class="form-field">
-            <label for="horaFin">Hora de finalización <em>*</em></label>
-            <input id="horaFin" type="time" formControlName="horaFin" min="08:00" max="20:00" step="1800" [class.invalid]="horaFin.invalid && horaFin.touched">
-            <small>Duración máxima permitida: 8 horas.</small>
-            <div class="field-error" *ngIf="horaFin.touched && horaFin.invalid">Ingresa una hora entre 08:00 y 20:00.</div>
-          </div>
-        </div>
-
-        <div *ngIf="eventoForm.hasError('horaFinAnterior')" class="inline-alert inline-alert--error"><i class="fas fa-circle-exclamation"></i>La hora de finalización debe ser posterior a la hora de inicio.</div>
-
-        <div class="availability-box">
-          <div><span><i class="far fa-calendar-check"></i></span><div><h3>Comprueba el horario</h3><p>Verifica que no exista otra solicitud aprobada o pendiente en la misma fecha.</p></div></div>
-          <button type="button" (click)="verificarDisponibilidad()" [disabled]="!fechaEvento.value || !horaInicio.value || !horaFin.value || eventoForm.invalid"><i class="fas fa-magnifying-glass"></i> Verificar disponibilidad</button>
-        </div>
-        <div *ngIf="disponibilidadVerificada" class="availability-result" [class.availability-result--success]="disponible" [class.availability-result--error]="!disponible"><i class="fas" [class.fa-circle-check]="disponible" [class.fa-circle-xmark]="!disponible"></i><span><strong>{{ disponible ? 'Horario disponible' : 'Horario no disponible' }}</strong>{{ disponible ? 'Puedes continuar con la solicitud.' : 'Selecciona otra fecha u horario.' }}</span></div>
-      </section>
-
-      <section class="form-section form-section--responsible" formGroupName="responsable">
-        <header class="section-heading"><span>2</span><div><h2>Persona responsable</h2><p>Estos datos se utilizarán para coordinar la reserva.</p></div></header>
-        <div class="fields-grid fields-grid--three">
-          <div class="form-field"><label for="responsableNombre">Nombre completo <em>*</em></label><input id="responsableNombre" type="text" formControlName="nombre" autocomplete="name" placeholder="Nombre y apellido" [class.invalid]="responsableNombre.invalid && responsableNombre.touched"><div class="field-error" *ngIf="responsableNombre.touched && responsableNombre.invalid">Ingresa al menos 3 caracteres.</div></div>
-          <div class="form-field"><label for="responsableCorreo">Correo electrónico <em>*</em></label><input id="responsableCorreo" type="email" formControlName="correo" autocomplete="email" placeholder="usuario@unibe.edu.ec" [class.invalid]="responsableCorreo.invalid && responsableCorreo.touched"><div class="field-error" *ngIf="responsableCorreo.touched && responsableCorreo.invalid">Ingresa un correo electrónico válido.</div></div>
-          <div class="form-field"><label for="responsableTelefono">Teléfono <em>*</em></label><input id="responsableTelefono" type="tel" formControlName="telefono" autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="0987654321" [class.invalid]="responsableTelefono.invalid && responsableTelefono.touched"><div class="field-error" *ngIf="responsableTelefono.touched && responsableTelefono.invalid">Ingresa exactamente 10 dígitos.</div></div>
-        </div>
-      </section>
-
-      <section class="form-section form-section--requirements">
-        <header class="section-heading section-heading--action"><span>3</span><div><h2>Recursos técnicos</h2><p>Añade únicamente los equipos necesarios. Esta sección es opcional.</p></div><button type="button" (click)="agregarRequerimiento()"><i class="fas fa-plus"></i> Agregar recurso</button></header>
-        <div formArrayName="requerimientos" class="requirements-list">
-          <div *ngIf="requerimientos.length === 0" class="requirements-empty"><i class="fas fa-box-open"></i><span><strong>Sin recursos adicionales</strong><small>Puedes enviar la solicitud sin agregar equipos.</small></span></div>
-          <div *ngFor="let req of requerimientos.controls; let i = index" [formGroupName]="i" class="requirement-row">
-            <span class="requirement-number">{{ i + 1 }}</span>
-            <div class="form-field"><label [for]="'tipo-' + i">Equipo o recurso <em>*</em></label><select [id]="'tipo-' + i" formControlName="tipo" [compareWith]="compararTipos" [class.invalid]="requerimientos.at(i).get('tipo')!.invalid && requerimientos.at(i).get('tipo')!.touched"><option [ngValue]="null" disabled>Selecciona un tipo</option><option *ngFor="let tipo of tiposRequerimiento" [ngValue]="tipo">{{ tipo.nombre }}</option></select><div class="field-error" *ngIf="requerimientos.at(i).get('tipo')!.touched && requerimientos.at(i).get('tipo')!.invalid">Selecciona un recurso.</div></div>
-            <div class="form-field"><label [for]="'cantidad-' + i">Cantidad <small *ngIf="requerimientos.at(i).get('tipo')!.value">Máx. {{ cantidadDisponibleRecurso(i) }}</small></label><input [id]="'cantidad-' + i" type="number" min="1" formControlName="cantidad" [max]="cantidadDisponibleRecurso(i)" [class.invalid]="requerimientos.at(i).get('cantidad')!.invalid && requerimientos.at(i).get('cantidad')!.touched"><div class="field-error" *ngIf="requerimientos.at(i).get('cantidad')!.touched && requerimientos.at(i).get('cantidad')!.invalid">Revisa la cantidad disponible.</div></div>
-            <label class="required-toggle" [for]="'requerido-' + i"><input type="checkbox" [id]="'requerido-' + i" formControlName="requerido"><span></span>Es indispensable</label>
-            <button type="button" class="remove-button" (click)="eliminarRequerimiento(i)" title="Eliminar recurso" aria-label="Eliminar recurso"><i class="far fa-trash-can"></i></button>
-          </div>
-        </div>
-      </section>
+      </footer>
     </div>
-
-    <aside class="form-sidebar">
-      <div class="sidebar-card sidebar-card--highlight"><span class="sidebar-icon"><i class="fas fa-clipboard-check"></i></span><h2>Antes de enviar</h2><p>Revisa que los datos sean correctos. La solicitud será evaluada por la administración.</p></div>
-      <div class="sidebar-card"><h2>Condiciones de reserva</h2><ul><li><i class="fas fa-check"></i><span><strong>14 días</strong> de anticipación mínima</span></li><li><i class="fas fa-check"></i><span>Horario de <strong>08:00 a 20:00</strong></span></li><li><i class="fas fa-check"></i><span>Máximo <strong>8 horas</strong> por evento</span></li><li><i class="fas fa-check"></i><span>Capacidad máxima de <strong>500 personas</strong></span></li></ul></div>
-      <div class="sidebar-card process-card"><h2>¿Qué sucede después?</h2><div><span>1</span><p><strong>Envío</strong>Tu solicitud queda pendiente.</p></div><div><span>2</span><p><strong>Revisión</strong>La administración valida los datos.</p></div><div><span>3</span><p><strong>Respuesta</strong>Recibirás la confirmación correspondiente.</p></div></div>
-      <div class="sidebar-note"><i class="far fa-clock"></i><span><strong>Tiempo estimado de respuesta</strong>3 a 5 días hábiles</span></div>
-    </aside>
-
-    <footer class="form-actions">
-      <button type="button" class="button button--cancel" (click)="cancelar()"><i class="fas fa-xmark"></i> Cancelar</button>
-      <div><button type="button" class="button button--calendar" (click)="router.navigate(['/eventos/calendario'])"><i class="far fa-calendar"></i> Ver calendario</button><button type="submit" class="button button--submit" [disabled]="eventoForm.invalid || loading || (isEditMode && !puedeEditar)"><i class="fas" [class.fa-floppy-disk]="isEditMode" [class.fa-paper-plane]="!isEditMode"></i>{{ isEditMode ? 'Guardar cambios' : 'Enviar solicitud' }}</button></div>
-    </footer>
   </form>
-</section>
+</main>

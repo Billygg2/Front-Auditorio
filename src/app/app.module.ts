@@ -1,3 +1,4 @@
+// MÓDULO RAÍZ: dependencias globales, localización, interceptor JWT y componentes compartidos.
 import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';

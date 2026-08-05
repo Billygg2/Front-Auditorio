@@ -27,6 +27,7 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  // Envía las credenciales y guarda la sesión antes de abrir el calendario.
   login(): void {
     if (!this.credentials.username || !this.credentials.password) {
       this.error = 'Por favor ingrese usuario y contraseña';

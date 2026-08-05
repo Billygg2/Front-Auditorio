@@ -37,6 +37,8 @@ export class CalendarViewComponent implements OnInit {
   diaSeleccionadoObj: Date | null = null;
   panelVisible = false;
   horariosVisuales: HorarioVisual[] = [];
+  paginaHorarios = 0;
+  readonly tamanioPaginaHorarios = 3;
 
   constructor(
     private eventoService: EventoService,
@@ -114,6 +116,7 @@ export class CalendarViewComponent implements OnInit {
     this.diaSeleccionadoObj = null;
     this.panelVisible = false;
     this.horariosVisuales = [];
+    this.paginaHorarios = 0;
   }
 
   getNombreMes(): string {
@@ -132,6 +135,7 @@ export class CalendarViewComponent implements OnInit {
     this.diaSeleccionadoObj = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate());
     this.panelVisible = true;
     this.horariosVisuales = [];
+    this.paginaHorarios = 0;
 
     if (!this.loading) {
       this.generarHorariosVisuales();
@@ -189,6 +193,10 @@ export class CalendarViewComponent implements OnInit {
 
   esMismoDia(dia: Date, str: string): boolean {
     return this.fechaAStr(dia) === str;
+  }
+
+  esHoy(dia: Date): boolean {
+    return this.fechaAStr(dia) === this.fechaAStr(new Date());
   }
 
   // ── LÓGICA DE FECHAS ──────────────────────────────
@@ -389,6 +397,19 @@ export class CalendarViewComponent implements OnInit {
 
   contarHorarios(estado: string): number {
     return this.horariosVisuales.filter(h => h.estado === estado).length;
+  }
+
+  get horariosPaginados(): HorarioVisual[] {
+    const inicio = this.paginaHorarios * this.tamanioPaginaHorarios;
+    return this.horariosVisuales.slice(inicio, inicio + this.tamanioPaginaHorarios);
+  }
+
+  get totalPaginasHorarios(): number {
+    return Math.ceil(this.horariosVisuales.length / this.tamanioPaginaHorarios);
+  }
+
+  cambiarPaginaHorarios(pagina: number): void {
+    this.paginaHorarios = pagina;
   }
 
   getFechaActualFormateada(): string {

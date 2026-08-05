@@ -1,105 +1,185 @@
-<section class="calendar-page" aria-labelledby="calendar-title">
-  <header class="page-hero">
+<main class="calendar-page container-xxl px-0" aria-labelledby="calendar-title">
+  <header class="page-hero d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 p-4 mb-3">
     <div>
       <span class="eyebrow">Disponibilidad del auditorio</span>
-      <h1 id="calendar-title">Planifica tu próxima reserva</h1>
-      <p>Consulta las fechas y horarios disponibles antes de enviar tu solicitud.</p>
+      <h1 id="calendar-title" class="my-1">Planifica tu próxima reserva</h1>
+      <p class="mb-0">Consulta las fechas y horarios disponibles antes de enviar tu solicitud.</p>
     </div>
-    <div class="hero-actions">
-      <a routerLink="/eventos" class="button button--secondary"><i class="far fa-calendar-check"></i> Mis reservas</a>
-      <a routerLink="/eventos/nuevo" class="button button--primary"><i class="fas fa-plus"></i> Nueva reserva</a>
+    <div class="d-flex flex-wrap gap-2">
+      <a routerLink="/eventos" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+        <i class="far fa-calendar-check" aria-hidden="true"></i>Mis reservas
+      </a>
+      <a routerLink="/eventos/nuevo" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        <i class="fas fa-plus" aria-hidden="true"></i>Nueva reserva
+      </a>
     </div>
   </header>
 
-  <aside class="booking-guide">
-    <span class="booking-guide__icon"><i class="fas fa-circle-info"></i></span>
-    <div><strong>Antes de reservar</strong><p>Las solicitudes deben realizarse con al menos 14 días de anticipación. El horario disponible del auditorio es de 08:00 a 20:00.</p></div>
-    <button type="button" (click)="irAFechaMinima()">Ver primera fecha disponible <i class="fas fa-arrow-right"></i></button>
+  <aside class="booking-guide alert d-flex flex-column flex-md-row align-items-md-center gap-3 mb-3" role="note">
+    <span class="guide-icon d-inline-flex align-items-center justify-content-center">
+      <i class="fas fa-circle-info" aria-hidden="true"></i>
+    </span>
+    <div class="flex-grow-1">
+      <strong>Antes de reservar</strong>
+      <p class="mb-0">Las solicitudes deben realizarse con al menos 14 días de anticipación. El horario disponible del auditorio es de 08:00 a 20:00.</p>
+    </div>
+    <button type="button" class="btn btn-link d-inline-flex align-items-center gap-2 p-0 text-nowrap"
+      (click)="irAFechaMinima()">
+      Ver primera fecha disponible <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </button>
   </aside>
 
-  <div class="calendar-shell">
-    <div class="calendar-toolbar">
-      <div class="today-block"><small>Fecha actual</small><strong>{{ getFechaActualFormateada() }}</strong></div>
-      <div class="month-navigation">
-        <button type="button" class="nav-button" (click)="cambiarMes(-1)" aria-label="Mes anterior"><i class="fas fa-chevron-left"></i></button>
-        <h2>{{ getNombreMes() }} <span>{{ anioActual }}</span></h2>
-        <button type="button" class="nav-button" (click)="cambiarMes(1)" aria-label="Mes siguiente"><i class="fas fa-chevron-right"></i></button>
+  <section class="calendar-shell card overflow-hidden">
+    <header class="calendar-toolbar d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3 p-3">
+      <div class="today-block d-none d-lg-block">
+        <small class="d-block">Fecha actual</small>
+        <strong>{{ getFechaActualFormateada() }}</strong>
       </div>
-      <button type="button" class="minimum-date-button" (click)="irAFechaMinima()"><i class="far fa-calendar"></i> Fecha disponible</button>
-    </div>
+      <div class="month-navigation d-flex align-items-center justify-content-center gap-3">
+        <button type="button" class="nav-button btn" (click)="cambiarMes(-1)" aria-label="Mes anterior">
+          <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <h2 class="mb-0 text-center">{{ getNombreMes() }} <span>{{ anioActual }}</span></h2>
+        <button type="button" class="nav-button btn" (click)="cambiarMes(1)" aria-label="Mes siguiente">
+          <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <button type="button" class="minimum-date-button btn d-none d-lg-inline-flex align-items-center gap-2"
+        (click)="irAFechaMinima()">
+        <i class="far fa-calendar" aria-hidden="true"></i>Fecha disponible
+      </button>
+    </header>
 
-    <div class="calendar-content">
-      <div class="calendar-grid-section">
-        <div class="weekdays-row"><div class="weekday" *ngFor="let nombreDia of diasSemana">{{ nombreDia }}</div></div>
+    <div class="row g-0">
+      <!-- CUADRÍCULA IZQUIERDA: días del mes y colores de disponibilidad. -->
+      <section class="calendar-grid-section col-12 col-xl-6 p-3 p-md-4" aria-label="Calendario mensual">
+        <div class="weekdays-row">
+          <div class="weekday" *ngFor="let nombreDia of diasSemana">{{ nombreDia }}</div>
+        </div>
         <div class="days-grid">
           <ng-container *ngFor="let dia of diasDelMes">
             <span *ngIf="!dia" class="day-cell day-cell--empty" aria-hidden="true"></span>
             <button *ngIf="dia" type="button" class="day-cell"
-                    [class.day-cell--selected]="esMismoDia(dia, diaSeleccionadoStr)"
-                    [ngClass]="'day-cell--' + getTipoDia(dia)"
-                    (click)="seleccionarDia(dia)"
-                    [attr.aria-label]="'Seleccionar día ' + dia.getDate()">
+              [class.day-cell--selected]="esMismoDia(dia, diaSeleccionadoStr)"
+              [class.day-cell--today]="esHoy(dia)"
+              [ngClass]="'day-cell--' + getTipoDia(dia)"
+              (click)="seleccionarDia(dia)"
+              [attr.aria-label]="(esHoy(dia) ? 'Hoy, ' : '') + 'seleccionar día ' + dia.getDate()">
               <span class="day-number">{{ dia.getDate() }}</span>
+              <span *ngIf="esHoy(dia)" class="today-label">Hoy</span>
               <span class="day-indicator" aria-hidden="true"></span>
             </button>
           </ng-container>
         </div>
 
-        <div class="calendar-legend" aria-label="Significado de colores">
+        <div class="calendar-legend d-flex flex-wrap gap-3 mt-4 pt-3" aria-label="Significado de colores">
           <div><span class="legend-dot legend-dot--available"></span>Disponible</div>
           <div><span class="legend-dot legend-dot--partial"></span>Parcial</div>
           <div><span class="legend-dot legend-dot--full"></span>Sin disponibilidad</div>
           <div><span class="legend-dot legend-dot--history"></span>Evento pasado</div>
           <div><span class="legend-dot legend-dot--blocked"></span>No reservable</div>
         </div>
-      </div>
+      </section>
 
-      <aside class="day-detail">
-        <div *ngIf="!panelVisible" class="detail-placeholder">
-          <span><i class="far fa-calendar"></i></span>
-          <h2>Selecciona una fecha</h2>
-          <p>Haz clic sobre un día para consultar sus horarios y conocer la disponibilidad.</p>
+      <!-- PANEL DERECHO: información y horarios de la fecha seleccionada. -->
+      <aside class="day-detail col-12 col-xl-6 p-3 p-md-4">
+        <div *ngIf="!panelVisible"
+          class="detail-state d-flex flex-column align-items-center justify-content-center text-center">
+          <span class="detail-icon d-inline-flex align-items-center justify-content-center">
+            <i class="far fa-calendar" aria-hidden="true"></i>
+          </span>
+          <h2 class="mt-3 mb-1">Selecciona una fecha</h2>
+          <p class="mb-0">Haz clic sobre un día para consultar sus horarios y conocer la disponibilidad.</p>
         </div>
 
         <ng-container *ngIf="panelVisible && diaSeleccionadoObj">
-          <header class="detail-header">
-            <div class="selected-date"><strong>{{ diaSeleccionadoObj.getDate() }}</strong><span>{{ diaSeleccionadoObj | date:'EEEE':'':'es-EC' | titlecase }}<small>{{ diaSeleccionadoObj | date:'MMMM yyyy':'':'es-EC' | titlecase }}</small></span></div>
+          <header class="detail-header card d-flex flex-row align-items-center justify-content-between gap-3 p-3 mb-3">
+            <div class="selected-date d-flex align-items-center gap-3">
+              <strong>{{ diaSeleccionadoObj.getDate() }}</strong>
+              <span>
+                {{ diaSeleccionadoObj | date:'EEEE':'':'es-EC' | titlecase }}
+                <small class="d-block">{{ diaSeleccionadoObj | date:'MMMM yyyy':'':'es-EC' | titlecase }}</small>
+              </span>
+            </div>
             <ng-container [ngSwitch]="getTipoDia(diaSeleccionadoObj)">
-              <span class="availability availability--blocked" *ngSwitchCase="'pasado-vacio'">Día pasado</span>
-              <span class="availability availability--history" *ngSwitchCase="'pasado-con-eventos'">Eventos realizados</span>
-              <span class="availability availability--blocked" *ngSwitchCase="'bloqueado'">No reservable aún</span>
-              <span class="availability availability--available" *ngSwitchCase="'libre'">Disponible</span>
-              <span class="availability availability--partial" *ngSwitchCase="'parcial'">Disponibilidad parcial</span>
-              <span class="availability availability--full" *ngSwitchCase="'lleno'">Sin disponibilidad</span>
+              <span class="availability availability--blocked badge" *ngSwitchCase="'pasado-vacio'">Día pasado</span>
+              <span class="availability availability--history badge" *ngSwitchCase="'pasado-con-eventos'">Eventos realizados</span>
+              <span class="availability availability--blocked badge" *ngSwitchCase="'bloqueado'">No reservable aún</span>
+              <span class="availability availability--available badge" *ngSwitchCase="'libre'">Disponible</span>
+              <span class="availability availability--partial badge" *ngSwitchCase="'parcial'">Disponibilidad parcial</span>
+              <span class="availability availability--full badge" *ngSwitchCase="'lleno'">Sin disponibilidad</span>
             </ng-container>
           </header>
 
-          <div *ngIf="loading" class="detail-loading"><span class="spinner-border"></span><p>Cargando horarios disponibles...</p></div>
-
-          <div *ngIf="!loading && horariosVisuales.length === 0" class="blocked-state">
-            <ng-container *ngIf="esPasado(diaSeleccionadoObj)"><span><i class="far fa-calendar-xmark"></i></span><h3>Sin reservas registradas</h3><p>No hubo reservas aceptadas durante este día.</p></ng-container>
-            <ng-container *ngIf="!esPasado(diaSeleccionadoObj) && !esFechaReservable(diaSeleccionadoObj)"><span><i class="fas fa-lock"></i></span><h3>Fecha todavía no habilitada</h3><p>Recuerda reservar con un mínimo de 14 días de anticipación.</p></ng-container>
+          <div *ngIf="loading" class="detail-state d-flex flex-column align-items-center justify-content-center text-center">
+            <span class="spinner-border" aria-hidden="true"></span>
+            <p class="mt-3 mb-0">Cargando horarios disponibles...</p>
           </div>
 
-          <div *ngIf="!loading && horariosVisuales.length > 0" class="schedule-section">
-            <div class="schedule-heading"><div><h3>Horarios del día</h3><p>Selecciona un bloque libre para continuar.</p></div><span>{{ horariosVisuales.length }} bloque(s)</span></div>
-            <div class="schedule-list">
-              <article *ngFor="let horario of horariosVisuales" class="schedule-card" [ngClass]="'schedule-card--' + horario.estado">
-                <div class="schedule-time"><strong>{{ horario.horaInicio }}</strong><span></span><strong>{{ horario.horaFin }}</strong><small>{{ horario.duracionHoras }} h</small></div>
-                <div class="schedule-info"><span class="schedule-status"><i class="fas fa-circle"></i>{{ getTextoEstado(horario.estado) }}</span><strong *ngIf="horario.evento">{{ horario.evento.nombreEvento }}</strong><small *ngIf="!horario.evento">Horario disponible para una nueva solicitud</small></div>
-                <button *ngIf="horario.estado === 'libre'" type="button" class="reserve-button" (click)="navegarAReserva(horario)">Reservar <i class="fas fa-arrow-right"></i></button>
+          <div *ngIf="!loading && horariosVisuales.length === 0"
+            class="detail-state d-flex flex-column align-items-center justify-content-center text-center">
+            <ng-container *ngIf="esPasado(diaSeleccionadoObj)">
+              <span class="detail-icon d-inline-flex align-items-center justify-content-center">
+                <i class="far fa-calendar-xmark" aria-hidden="true"></i>
+              </span>
+              <h3 class="mt-3 mb-1">Sin reservas registradas</h3>
+              <p class="mb-0">No hubo reservas aceptadas durante este día.</p>
+            </ng-container>
+            <ng-container *ngIf="!esPasado(diaSeleccionadoObj) && !esFechaReservable(diaSeleccionadoObj)">
+              <span class="detail-icon d-inline-flex align-items-center justify-content-center">
+                <i class="fas fa-lock" aria-hidden="true"></i>
+              </span>
+              <h3 class="mt-3 mb-1">Fecha todavía no habilitada</h3>
+              <p class="mb-0">Recuerda reservar con un mínimo de 14 días de anticipación.</p>
+            </ng-container>
+          </div>
+
+          <section *ngIf="!loading && horariosVisuales.length > 0">
+            <header class="d-flex align-items-center justify-content-between gap-3 mb-2">
+              <div>
+                <h3 class="schedule-title mb-1">Horarios del día</h3>
+                <p class="schedule-help mb-0">Selecciona un bloque libre para continuar.</p>
+              </div>
+              <span class="small text-secondary">{{ horariosVisuales.length }} bloque(s)</span>
+            </header>
+
+            <div class="d-grid gap-2">
+              <article *ngFor="let horario of horariosPaginados"
+                class="schedule-card card d-flex flex-column flex-md-row align-items-md-center gap-2 gap-md-3 p-3"
+                [ngClass]="'schedule-card--' + horario.estado">
+                <div class="schedule-time d-flex align-items-center gap-2">
+                  <strong>{{ horario.horaInicio }}</strong><span></span><strong>{{ horario.horaFin }}</strong>
+                  <small class="badge">{{ horario.duracionHoras }} h</small>
+                </div>
+                <div class="schedule-info flex-grow-1">
+                  <span class="schedule-status d-block">
+                    <i class="fas fa-circle me-1" aria-hidden="true"></i>{{ getTextoEstado(horario.estado) }}
+                  </span>
+                  <strong *ngIf="horario.evento" class="d-block">{{ horario.evento.nombreEvento }}</strong>
+                  <small *ngIf="!horario.evento">Horario disponible para una nueva solicitud</small>
+                </div>
+                <button *ngIf="horario.estado === 'libre'" type="button"
+                  class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                  (click)="navegarAReserva(horario)">
+                  Reservar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
               </article>
             </div>
-          </div>
 
-          <div *ngIf="!loading && horariosVisuales.length > 0" class="day-summary">
-            <div class="day-summary__available"><strong>{{ contarHorarios('libre') }}</strong><span>Libres</span></div>
-            <div class="day-summary__pending"><strong>{{ contarHorarios('en-proceso') }}</strong><span>Pendientes</span></div>
-            <div class="day-summary__occupied"><strong>{{ contarHorarios('ocupado') }}</strong><span>Ocupados</span></div>
-            <div class="day-summary__completed" *ngIf="contarHorarios('completado') > 0"><strong>{{ contarHorarios('completado') }}</strong><span>Completados</span></div>
+            <app-pagination [pagina]="paginaHorarios" [tamanio]="tamanioPaginaHorarios"
+              [totalElementos]="horariosVisuales.length" [totalPaginas]="totalPaginasHorarios"
+              (paginaChange)="cambiarPaginaHorarios($event)">
+            </app-pagination>
+          </section>
+
+          <div *ngIf="!loading && horariosVisuales.length > 0" class="day-summary row g-2 mt-2">
+            <div class="col-6 col-md-3"><div class="summary-item summary-item--available"><strong>{{ contarHorarios('libre') }}</strong><span>Libres</span></div></div>
+            <div class="col-6 col-md-3"><div class="summary-item summary-item--pending"><strong>{{ contarHorarios('en-proceso') }}</strong><span>Pendientes</span></div></div>
+            <div class="col-6 col-md-3"><div class="summary-item summary-item--occupied"><strong>{{ contarHorarios('ocupado') }}</strong><span>Ocupados</span></div></div>
+            <div class="col-6 col-md-3" *ngIf="contarHorarios('completado') > 0"><div class="summary-item summary-item--completed"><strong>{{ contarHorarios('completado') }}</strong><span>Completados</span></div></div>
           </div>
         </ng-container>
       </aside>
     </div>
-  </div>
-</section>
+  </section>
+</main>

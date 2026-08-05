@@ -161,6 +161,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     return this.requerimientos.at(index).get('tipo')?.value?.cantidadDisponible || 100;
   }
 
+  // Guarda temporalmente lo escrito para no perderlo al consultar el calendario.
   private guardarBorrador(): void {
     try {
       sessionStorage.setItem(this.draftKey, JSON.stringify(this.eventoForm.getRawValue()));
@@ -169,6 +170,7 @@ export class EventoFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Recupera el borrador cuando el usuario regresa al formulario.
   private restaurarBorrador(): void {
     try {
       const contenido = sessionStorage.getItem(this.draftKey);
@@ -219,6 +221,7 @@ agregarRequerimiento(): void {
     this.requerimientos.removeAt(index);
   }
 
+  // En edición, consulta la reserva y llena todos sus campos y recursos.
   private cargarEvento(): void {
     if (!this.eventoId) return;
 
@@ -358,6 +361,7 @@ private verificarSiPuedeEditar(evento: EventoAuditorio): void {
     return fechaMaxima.toISOString().split('T')[0];
   }
 
+  // Comprueba con el backend que no exista un cruce de fechas y horarios.
   verificarDisponibilidad(): void {
     if (this.eventoForm.get('fechaEvento')?.invalid) {
       alert('Por favor, seleccione una fecha válida (mínimo 14 días de anticipación desde hoy)');
@@ -403,6 +407,7 @@ private verificarSiPuedeEditar(evento: EventoAuditorio): void {
     this.subscriptions.add(disponibilidadSub);
   }
 
+  // Valida todo el formulario y decide entre crear una reserva o actualizarla.
   onSubmit(): void {
     // Verificar si puede editar (en modo edición)
     if (this.isEditMode && !this.puedeEditar) {

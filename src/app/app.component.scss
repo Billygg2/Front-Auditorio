@@ -1,147 +1,89 @@
+$navy: #1c2544;
+$blue: #004990;
+$yellow: #fecc0d;
+
 .app-content {
-    min-height: calc(100vh - 164px);
-    padding: 34px clamp(18px, 4vw, 54px) 48px;
-    background: linear-gradient(145deg, #eaf1f8 0%, #f4f7fb 48%, #fff8d9 135%)
+  min-height: calc(100vh - 164px);
+  padding: 2.125rem clamp(1.125rem, 4vw, 3.375rem) 3rem;
+  background: linear-gradient(145deg, #eaf1f8 0%, #f4f7fb 48%, #fff8d9 135%);
 }
 
 .site-footer {
-    position: relative;
-    background: #1c2544;
-    color: #fff
+  background: $navy;
 }
 
+/* Pie de página: marca institucional, enlaces y datos de contacto. */
 .footer-accent {
-    height: 6px;
-    background: linear-gradient(90deg, #fecc0d 0 28%, #004990 28% 68%, #fff 68% 72%, #fecc0d 72%)
+  height: 6px;
+  background: linear-gradient(90deg, $yellow 0 28%, $blue 28% 68%, #fff 68% 72%, $yellow 72%);
 }
 
-.site-footer__main {
-    display: grid;
-    grid-template-columns: 1.45fr repeat(3, 1fr);
-    gap: clamp(28px, 4vw, 65px);
-    max-width: 1400px;
-    margin: auto;
-    padding: 46px clamp(20px, 4vw, 54px) 38px
-}
-
-.footer-brand img {
-    display: block;
+.footer-brand {
+  img {
     width: 190px;
     height: auto;
-    margin-bottom: 18px
-}
+  }
 
-.footer-brand p {
-    max-width: 310px;
-    margin: 0;
-    color: rgba(255, 255, 255, .66);
-    font-size: 14px;
-    line-height: 1.7
+  p {
+    max-width: 330px;
+    color: rgba(#fff, .66);
+    font-size: .88rem;
+    line-height: 1.7;
+  }
 }
 
 .footer-section {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 11px
-}
-
-.footer-section h2 {
+  h2 {
     position: relative;
-    margin: 0 0 9px;
-    padding-bottom: 10px;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 750
-}
+    margin-bottom: 1.25rem;
+    padding-bottom: .65rem;
+    font-size: .95rem;
+    font-weight: 700;
 
-.footer-section h2::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 30px;
-    height: 3px;
-    border-radius: 2px;
-    background: #fecc0d
-}
+    &::after {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 30px;
+      height: 3px;
+      border-radius: 2px;
+      background: $yellow;
+      content: '';
+    }
+  }
 
-.footer-section>a {
-    color: rgba(255, 255, 255, .7);
-    font-size: 13px;
+  a,
+  p {
+    color: rgba(#fff, .7);
+    font-size: .8rem;
+  }
+
+  a {
     text-decoration: none;
-    transition: .2s
-}
 
-.footer-section>a:hover {
-    color: #fecc0d;
-    transform: translateX(3px)
-}
+    &:hover {
+      color: $yellow;
+    }
+  }
 
-.footer-section p {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin: 0;
-    color: rgba(255, 255, 255, .68);
-    font-size: 12px
-}
-
-.footer-section i {
+  i {
     width: 16px;
-    margin-top: 3px;
-    color: #fecc0d
-}
+    color: $yellow;
+  }
 
-.footer-section p span {
-    display: grid;
-    gap: 2px
-}
-
-.footer-section p strong {
+  strong {
     color: #fff;
-    font-size: 12px
+  }
 }
 
-.site-footer__bottom {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    max-width: 1400px;
-    margin: auto;
-    padding: 17px clamp(20px, 4vw, 54px);
-    border-top: 1px solid rgba(255, 255, 255, .11);
-    color: rgba(255, 255, 255, .48);
-    font-size: 11px
+.footer-bottom {
+  border-color: rgba(#fff, .11) !important;
+  color: rgba(#fff, .5);
+  font-size: .72rem;
 }
 
-@media(max-width:900px) {
-    .site-footer__main {
-        grid-template-columns: repeat(2, 1fr)
-    }
-
-    .footer-brand {
-        grid-column: 1/-1
-    }
-}
-
-@media(max-width:560px) {
-    .app-content {
-        padding: 24px 14px 38px
-    }
-
-    .site-footer__main {
-        grid-template-columns: 1fr;
-        padding-top: 36px
-    }
-
-    .footer-brand {
-        grid-column: auto
-    }
-
-    .site-footer__bottom {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px
-    }
+@media (max-width: 575.98px) {
+  .app-content {
+    padding: 1.5rem .875rem 2.375rem;
+  }
 }

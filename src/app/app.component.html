@@ -1,39 +1,87 @@
 <ng-container *ngIf="!isAuthPage; else authLayout">
   <app-header></app-header>
-  <main class="app-content"><router-outlet></router-outlet></main>
 
-  <footer class="site-footer">
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Pie institucional mostrado únicamente dentro de las rutas autenticadas. -->
+  <footer class="site-footer text-white">
     <div class="footer-accent" aria-hidden="true"></div>
-    <div class="site-footer__main">
-      <section class="footer-brand">
-        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png" alt="Universidad Iberoamericana del Ecuador">
-        <p>Plataforma institucional para consultar la disponibilidad y gestionar las reservas del auditorio universitario.</p>
-      </section>
 
-      <nav class="footer-section" aria-label="Enlaces del sistema">
-        <h2>Sistema de reservas</h2>
-        <a routerLink="/eventos/calendario">Consultar calendario</a>
-        <a routerLink="/eventos">Mis reservas</a>
-        <a routerLink="/eventos/nuevo">Nueva solicitud</a>
-      </nav>
+    <div class="container-xxl py-5 px-3 px-lg-4">
+      <div class="row g-4 g-lg-5">
+        <section class="col-12 col-lg-4 footer-brand">
+          <img
+            class="d-block mb-3"
+            src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
+            alt="Universidad Iberoamericana del Ecuador">
+          <p class="mb-0">
+            Plataforma institucional para consultar la disponibilidad y gestionar las reservas del auditorio
+            universitario.
+          </p>
+        </section>
 
-      <section class="footer-section">
-        <h2>Información importante</h2>
-        <p><i class="far fa-clock"></i><span><strong>Horario del auditorio</strong>08:00 a 20:00</span></p>
-        <p><i class="far fa-calendar-check"></i><span><strong>Anticipación mínima</strong>14 días antes del evento</span></p>
-      </section>
+        <nav class="col-12 col-sm-6 col-lg footer-section" aria-label="Enlaces del sistema">
+          <h2>Sistema de reservas</h2>
+          <div class="d-flex flex-column align-items-start gap-2">
+            <a routerLink="/eventos/calendario">Consultar calendario</a>
+            <a routerLink="/eventos">Mis reservas</a>
+            <a routerLink="/eventos/nuevo">Nueva solicitud</a>
+          </div>
+        </nav>
 
-      <section class="footer-section">
-        <h2>Universidad</h2>
-        <p><i class="fas fa-location-dot"></i><span><strong>UNIB.E</strong>Quito, Ecuador</span></p>
-        <p><i class="fas fa-shield-halved"></i><span><strong>Acceso institucional</strong>Información protegida</span></p>
-      </section>
+        <section class="col-12 col-sm-6 col-lg footer-section">
+          <h2>Información importante</h2>
+          <div class="d-flex flex-column gap-3">
+            <p class="d-flex align-items-start gap-2 mb-0">
+              <i class="far fa-clock mt-1" aria-hidden="true"></i>
+              <span class="d-flex flex-column">
+                <strong>Horario del auditorio</strong>
+                08:00 a 20:00
+              </span>
+            </p>
+            <p class="d-flex align-items-start gap-2 mb-0">
+              <i class="far fa-calendar-check mt-1" aria-hidden="true"></i>
+              <span class="d-flex flex-column">
+                <strong>Anticipación mínima</strong>
+                14 días antes del evento
+              </span>
+            </p>
+          </div>
+        </section>
+
+        <section class="col-12 col-sm-6 col-lg footer-section">
+          <h2>Universidad</h2>
+          <div class="d-flex flex-column gap-3">
+            <p class="d-flex align-items-start gap-2 mb-0">
+              <i class="fas fa-location-dot mt-1" aria-hidden="true"></i>
+              <span class="d-flex flex-column">
+                <strong>UNIB.E</strong>
+                Quito, Ecuador
+              </span>
+            </p>
+            <p class="d-flex align-items-start gap-2 mb-0">
+              <i class="fas fa-shield-halved mt-1" aria-hidden="true"></i>
+              <span class="d-flex flex-column">
+                <strong>Acceso institucional</strong>
+                Información protegida
+              </span>
+            </p>
+          </div>
+        </section>
+      </div>
     </div>
-    <div class="site-footer__bottom">
-      <span>© 2026 Universidad Iberoamericana del Ecuador</span>
-      <span>Sistema de Reservas del Auditorio · v1.0.0</span>
+
+    <div class="footer-bottom border-top">
+      <div class="container-xxl d-flex flex-column flex-sm-row justify-content-between gap-2 px-3 px-lg-4 py-3">
+        <span>© 2026 Universidad Iberoamericana del Ecuador</span>
+        <span>Sistema de Reservas del Auditorio · v1.0.0</span>
+      </div>
     </div>
   </footer>
 </ng-container>
 
-<ng-template #authLayout><router-outlet></router-outlet></ng-template>
+<ng-template #authLayout>
+  <router-outlet></router-outlet>
+</ng-template>

@@ -1,23 +1,28 @@
-<div *ngIf="totalPaginas > 1" class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 px-3 py-3 border-top bg-white">
+<div *ngIf="totalPaginas > 1"
+  class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 px-3 py-3 border-top bg-white">
   <div class="d-flex align-items-center gap-2 text-secondary small">
     <span>Mostrando {{ primerRegistro }}-{{ ultimoRegistro }} de {{ totalElementos }}</span>
-    <select class="form-select form-select-sm w-auto" [value]="tamanio" (change)="cambiarTamanio($any($event.target).value)" aria-label="Cantidad por página">
+    <select *ngIf="permitirCambioTamanio" class="form-select form-select-sm w-auto" [value]="tamanio"
+      (change)="cambiarTamanio($any($event.target).value)" aria-label="Cantidad por página">
+      <option [value]="3">3 por página</option>
       <option [value]="5">5 por página</option>
       <option [value]="10">10 por página</option>
-      <option [value]="20">20 por página</option>
     </select>
   </div>
 
   <nav aria-label="Paginación de resultados">
     <ul class="pagination pagination-sm mb-0">
       <li class="page-item" [class.disabled]="pagina === 0">
-        <button type="button" class="page-link" [disabled]="pagina === 0" (click)="cambiarPagina(pagina - 1)">Anterior</button>
+        <button type="button" class="page-link" [disabled]="pagina === 0"
+          (click)="cambiarPagina(pagina - 1)">Anterior</button>
       </li>
       <li *ngFor="let numero of paginasVisibles" class="page-item" [class.active]="numero === pagina">
-        <button type="button" class="page-link" (click)="cambiarPagina(numero)" [attr.aria-current]="numero === pagina ? 'page' : null">{{ numero + 1 }}</button>
+        <button type="button" class="page-link" (click)="cambiarPagina(numero)"
+          [attr.aria-current]="numero === pagina ? 'page' : null">{{ numero + 1 }}</button>
       </li>
       <li class="page-item" [class.disabled]="pagina + 1 >= totalPaginas">
-        <button type="button" class="page-link" [disabled]="pagina + 1 >= totalPaginas" (click)="cambiarPagina(pagina + 1)">Siguiente</button>
+        <button type="button" class="page-link" [disabled]="pagina + 1 >= totalPaginas"
+          (click)="cambiarPagina(pagina + 1)">Siguiente</button>
       </li>
     </ul>
   </nav>

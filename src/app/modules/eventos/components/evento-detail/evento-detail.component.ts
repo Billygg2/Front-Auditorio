@@ -15,6 +15,8 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   isAdmin = false;
+  mostrarModalRechazo = false;
+  motivoRechazoInput = '';
   private subscriptions: Subscription = new Subscription();
 
   constructor(
@@ -134,6 +136,7 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/eventos']);
   }
 
+  // Aprueba una solicitud pendiente y activa las notificaciones del backend.
   aprobarEvento(): void {
     if (!this.evento?.id || !this.isAdmin) return;
     if (!confirm('¿Está seguro de aprobar este evento?')) return;
@@ -160,24 +163,33 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     this.subscriptions.add(aprobarSub);
   }
 
+  // Abre el modal donde el administrador debe escribir el motivo.
   rechazarEvento(): void {
     if (!this.evento?.id || !this.isAdmin) return;
+    this.motivoRechazoInput = '';
+    this.mostrarModalRechazo = true;
+  }
 
-    const motivo = prompt('Ingrese el motivo de rechazo:');
-    if (motivo === null || motivo.trim() === '') {
-      alert('Debe ingresar un motivo para rechazar');
-      return;
-    }
+  cerrarModalRechazo(): void {
+    this.mostrarModalRechazo = false;
+    this.motivoRechazoInput = '';
+  }
+
+  // Envía al backend el rechazo confirmado desde el modal.
+  confirmarRechazo(): void {
+    if (!this.evento?.id || !this.isAdmin || !this.motivoRechazoInput.trim()) return;
 
     this.loading = true;
+    this.mostrarModalRechazo = false;
     const aprobacionDTO: AprobacionEventoDTO = {
       estado: EstadoEvento.RECHAZADO,
-      motivoRechazo: motivo.trim()
+      motivoRechazo: this.motivoRechazoInput.trim()
     };
 
     const rechazarSub = this.eventoService.aprobarRechazarEvento(this.evento.id, aprobacionDTO).subscribe({
       next: (eventoActualizado: EventoAuditorio) => {
         this.evento = eventoActualizado;
+        this.motivoRechazoInput = '';
         alert('Evento rechazado. El usuario será notificado automáticamente por correo.');
       },
       error: (err: any) => {
@@ -192,6 +204,7 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     this.subscriptions.add(rechazarSub);
   }
 
+  // Anula una reserva previamente aprobada que todavía no ha finalizado.
   cancelarReserva(): void {
     if (!this.evento?.id || !this.isAdmin) return;
 

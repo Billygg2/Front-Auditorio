@@ -1,97 +1,184 @@
-<header class="site-header">
-  <nav class="navbar navbar-expand-lg" aria-label="Navegación principal">
-    <div class="container-fluid">
-      <a class="navbar-brand" routerLink="/eventos/calendario" aria-label="UNIB.E - Inicio">
-        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
+<header class="site-header sticky-top">
+  <!-- Barra principal: logo, rutas disponibles y controles de la sesión. -->
+  <nav class="navbar navbar-expand-lg navbar-dark py-0" aria-label="Navegación principal">
+    <div class="container-xxl px-3 px-lg-4">
+      <a class="navbar-brand me-lg-5 py-3" routerLink="/eventos/calendario" aria-label="UNIB.E - Inicio">
+        <img
+          class="d-block w-100"
+          src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
           alt="Universidad Iberoamericana del Ecuador">
       </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Abrir menú">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav navigation-links">
-          <li class="nav-item"><a class="nav-link" routerLink="/eventos/calendario" routerLinkActive="active"><i
-                class="far fa-calendar"></i> Calendario</a></li>
-          <li class="nav-item"><a class="nav-link" routerLink="/eventos" [routerLinkActiveOptions]="{exact: true}"
-              routerLinkActive="active"><i class="far fa-calendar-check"></i> {{ isAdmin ? 'Eventos' : 'Mis reservas'
-              }}</a></li>
-          <li class="nav-item dropdown" *ngIf="isAdmin">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i
-                class="fas fa-sliders"></i> Administración</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" routerLink="/admin/usuarios" routerLinkActive="active">Gestión de
-                  usuarios</a></li>
-              <li><a class="dropdown-item" routerLink="/admin/tipos-requerimiento" routerLinkActive="active">Tipos de
-                  requerimiento</a></li>
+      <div class="collapse navbar-collapse align-items-stretch" id="navbarNav">
+        <ul class="navbar-nav align-items-lg-stretch gap-lg-1">
+          <li class="nav-item d-lg-flex">
+            <a
+              class="nav-link d-flex align-items-center gap-2 px-lg-3 py-3"
+              routerLink="/eventos/calendario"
+              routerLinkActive="active">
+              <i class="far fa-calendar" aria-hidden="true"></i>
+              Calendario
+            </a>
+          </li>
+
+          <li class="nav-item d-lg-flex">
+            <a
+              class="nav-link d-flex align-items-center gap-2 px-lg-3 py-3"
+              routerLink="/eventos"
+              [routerLinkActiveOptions]="{ exact: true }"
+              routerLinkActive="active">
+              <i class="far fa-calendar-check" aria-hidden="true"></i>
+              {{ isAdmin ? 'Eventos' : 'Mis reservas' }}
+            </a>
+          </li>
+
+          <li class="nav-item dropdown d-lg-flex" *ngIf="isAdmin">
+            <a
+              class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-lg-3 py-3"
+              href="#"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="fas fa-sliders" aria-hidden="true"></i>
+              Administración
+            </a>
+            <ul class="dropdown-menu border-0 shadow p-2">
+              <li>
+                <a class="dropdown-item rounded-2" routerLink="/admin/usuarios" routerLinkActive="active">
+                  Gestión de usuarios
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item rounded-2"
+                  routerLink="/admin/tipos-requerimiento"
+                  routerLinkActive="active">
+                  Tipos de requerimiento
+                </a>
+              </li>
             </ul>
           </li>
         </ul>
 
-        <div *ngIf="isAuthenticated" class="navbar-nav user-navigation">
-          <div class="notification-center">
-            <button type="button" class="notification-button" (click)="alternarNotificaciones($event)"
-              [attr.aria-expanded]="panelNotificacionesAbierto" aria-label="Abrir notificaciones">
+        <div
+          *ngIf="isAuthenticated"
+          class="auth-actions d-flex flex-row align-items-center gap-3 ms-lg-auto py-3 py-lg-0">
+          <div class="notification-center position-relative">
+            <button
+              type="button"
+              class="notification-button btn d-inline-flex align-items-center justify-content-center p-0"
+              (click)="alternarNotificaciones($event)"
+              [attr.aria-expanded]="panelNotificacionesAbierto"
+              aria-label="Abrir notificaciones">
               <i class="far fa-bell" aria-hidden="true"></i>
               <span *ngIf="cantidadNoLeidas > 0" class="notification-count">
                 {{ cantidadNoLeidas > 99 ? '99+' : cantidadNoLeidas }}
               </span>
             </button>
 
-            <section *ngIf="panelNotificacionesAbierto" class="notification-panel" (click)="$event.stopPropagation()">
-              <header>
-                <div>
+            <!-- Panel desplegable con el historial de notificaciones internas. -->
+            <section
+              *ngIf="panelNotificacionesAbierto"
+              class="notification-panel"
+              (click)="$event.stopPropagation()">
+              <header class="d-flex align-items-center justify-content-between gap-3 p-3 border-bottom">
+                <div class="d-flex flex-column">
                   <strong>Notificaciones</strong>
-                  <small>{{ cantidadNoLeidas }} sin leer</small>
+                  <small class="text-secondary">{{ cantidadNoLeidas }} sin leer</small>
                 </div>
-                <button type="button" (click)="marcarTodasComoLeidas($event)" [disabled]="cantidadNoLeidas === 0">
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 fw-semibold text-decoration-none"
+                  (click)="marcarTodasComoLeidas($event)"
+                  [disabled]="cantidadNoLeidas === 0">
                   Marcar todas como leídas
                 </button>
               </header>
 
-              <div *ngIf="cargandoNotificaciones" class="notification-state">
-                <span class="spinner-border spinner-border-sm"></span>
-                <p>Cargando notificaciones...</p>
+              <div
+                *ngIf="cargandoNotificaciones"
+                class="notification-state d-flex flex-column align-items-center justify-content-center gap-2 p-4 text-center">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <p class="mb-0">Cargando notificaciones...</p>
               </div>
 
-              <div *ngIf="!cargandoNotificaciones && notificaciones.length === 0" class="notification-state">
-                <i class="far fa-bell-slash"></i>
+              <div
+                *ngIf="!cargandoNotificaciones && notificaciones.length === 0"
+                class="notification-state d-flex flex-column align-items-center justify-content-center gap-2 p-4 text-center">
+                <i class="far fa-bell-slash" aria-hidden="true"></i>
                 <strong>Sin notificaciones</strong>
-                <p>Los avisos sobre las reservas aparecerán aquí.</p>
+                <p class="mb-0">Los avisos sobre las reservas aparecerán aquí.</p>
               </div>
 
               <div *ngIf="!cargandoNotificaciones && notificaciones.length > 0" class="notification-list">
-                <button *ngFor="let notificacion of notificaciones | slice:0:8" type="button"
-                  class="notification-item" [class.unread]="!notificacion.leida"
+                <button
+                  *ngFor="let notificacion of notificaciones | slice:0:8"
+                  type="button"
+                  class="notification-item"
+                  [class.unread]="!notificacion.leida"
                   (click)="abrirNotificacion(notificacion)">
-                  <span class="notification-icon" [attr.data-type]="notificacion.tipo">
-                    <i class="fas" [ngClass]="iconoNotificacion(notificacion.tipo)"></i>
+                  <span
+                    class="notification-icon d-inline-flex align-items-center justify-content-center"
+                    [attr.data-type]="notificacion.tipo">
+                    <i class="fas" [ngClass]="iconoNotificacion(notificacion.tipo)" aria-hidden="true"></i>
                   </span>
                   <span class="notification-content">
                     <strong>{{ notificacion.titulo }}</strong>
                     <span>{{ notificacion.mensaje }}</span>
                     <small>{{ notificacion.creadaEn | date:'dd/MM/yyyy · HH:mm' }}</small>
                   </span>
-                  <i *ngIf="!notificacion.leida" class="fas fa-circle unread-dot" aria-label="No leída"></i>
+                  <i
+                    *ngIf="!notificacion.leida"
+                    class="fas fa-circle unread-dot align-self-center"
+                    aria-label="No leída"></i>
                 </button>
               </div>
             </section>
           </div>
 
           <div class="nav-item dropdown">
-            <a class="user-button dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              <span class="user-avatar">{{ (nombreCompleto || username).charAt(0).toUpperCase() }}</span>
-              <span class="user-data"><small>{{ isAdmin ? 'Administrador' : 'Usuario' }}</small><strong>{{ nombreCompleto || username }}</strong></span>
+            <a
+              class="user-button dropdown-toggle d-flex align-items-center gap-2 text-decoration-none"
+              href="#"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <span class="user-avatar d-inline-flex align-items-center justify-content-center">
+                {{ (nombreCompleto || username).charAt(0).toUpperCase() }}
+              </span>
+              <span class="user-data d-none d-sm-flex flex-column">
+                <small>{{ isAdmin ? 'Administrador' : 'Usuario' }}</small>
+                <strong>{{ nombreCompleto || username }}</strong>
+              </span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" routerLink="/mi-cuenta"><i class="fas fa-user"></i> Mi cuenta</a></li>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow p-2">
               <li>
-                <hr class="dropdown-divider">
+                <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" routerLink="/mi-cuenta">
+                  <i class="fas fa-user" aria-hidden="true"></i>
+                  Mi cuenta
+                </a>
               </li>
-              <li><button class="dropdown-item logout-button" type="button" (click)="logout()"><i
-                    class="fas fa-arrow-right-from-bracket"></i> Cerrar sesión</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button
+                  class="dropdown-item logout-button d-flex align-items-center gap-2 rounded-2"
+                  type="button"
+                  (click)="logout()">
+                  <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                  Cerrar sesión
+                </button>
+              </li>
             </ul>
           </div>
         </div>

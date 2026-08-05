@@ -29,6 +29,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private elementRef: ElementRef<HTMLElement>
   ) {}
 
+  // Al iniciar, recupera la sesión y consulta las notificaciones del usuario.
   ngOnInit(): void {
     const usuarioSub = this.authService.currentUser$.subscribe(user => {
       this.isAuthenticated = !!user;
@@ -107,6 +108,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Elimina la sesión local y devuelve al usuario a la pantalla de acceso.
   logout(): void {
     this.detenerConsultaNotificaciones();
     this.authService.logout();

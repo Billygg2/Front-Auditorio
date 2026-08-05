@@ -17,7 +17,7 @@ export class EventoListComponent implements OnInit {
   filtroBusqueda: string = '';
   filtroEstado: string = '';
   paginaActual = 0;
-  tamanioPagina = 5;
+  tamanioPagina = 3;
   totalElementos = 0;
   totalPaginas = 0;
 
@@ -32,6 +32,7 @@ export class EventoListComponent implements OnInit {
     this.cargarEventos();
   }
 
+  // Obtiene todos los eventos únicamente para calcular los contadores superiores.
   cargarResumen(): void {
     const request = this.esAdmin
       ? this.eventoService.listarTodosEventos()
@@ -39,6 +40,7 @@ export class EventoListComponent implements OnInit {
     request.subscribe({ next: eventos => this.eventos = eventos });
   }
 
+  // Consulta al backend la página actual aplicando búsqueda y estado.
   cargarEventos(): void {
     this.loading = true;
     this.eventoService.listarEventosPaginados(
@@ -74,6 +76,7 @@ export class EventoListComponent implements OnInit {
     this.cargarEventos();
   }
 
+  // Reinicia la página y vuelve a consultar cuando cambia un filtro.
   aplicarFiltros(): void {
     this.paginaActual = 0;
     this.cargarEventos();
@@ -114,11 +117,15 @@ export class EventoListComponent implements OnInit {
     return fechaLocal.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '').toUpperCase();
   }
 
+  // Elimina una reserva permitida y evita dejar una última página vacía.
   eliminarEvento(id: number): void {
     if (!confirm('¿Está seguro de eliminar este evento?')) return;
     this.eventoService.eliminarEvento(id).subscribe({
       next: () => {
         alert('Evento eliminado correctamente');
+        if (this.eventosFiltrados.length === 1 && this.paginaActual > 0) {
+          this.paginaActual--;
+        }
         this.cargarResumen();
         this.cargarEventos();
       },

@@ -11,6 +11,12 @@ export class PaginationComponent {
   @Input() totalPaginas = 0;
   @Output() paginaChange = new EventEmitter<number>();
   @Output() tamanioChange = new EventEmitter<number>();
+  
+// PAGINADOR REUTILIZABLE: recibe totales y comunica los cambios al componente padre.
+
+  get permitirCambioTamanio(): boolean {
+    return this.tamanioChange.observed;
+  }
 
   get paginasVisibles(): number[] {
     const inicio = Math.max(0, Math.min(this.pagina - 2, this.totalPaginas - 5));

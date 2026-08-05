@@ -18,7 +18,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
     tipoSeleccionadoId?: number;
     mostrarFormulario = false;
     paginaActual = 0;
-    tamanioPagina = 10;
+    readonly tamanioPagina = 5;
     totalElementos = 0;
     totalPaginas = 0;
 
@@ -46,6 +46,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
         this.subs.unsubscribe();
     }
 
+    // Consulta al backend la página de recursos que debe mostrarse en la tabla.
     cargarTipos(): void {
         this.loading = true;
         this.subs.add(
@@ -61,6 +62,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
         );
     }
 
+    // Obtiene la lista completa únicamente para calcular los cuatro indicadores.
     cargarResumen(): void {
         this.subs.add(this.tipoService.listarTodos().subscribe({
             next: tipos => this.tiposResumen = tipos
@@ -72,12 +74,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
         this.cargarTipos();
     }
 
-    cambiarTamanio(tamanio: number): void {
-        this.tamanioPagina = tamanio;
-        this.paginaActual = 0;
-        this.cargarTipos();
-    }
-
+    // Prepara el formulario vacío para registrar un recurso nuevo.
     abrirFormularioNuevo(): void {
         this.modoEdicion = false;
         this.tipoSeleccionadoId = undefined;
@@ -92,7 +89,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
             nombre: tipo.nombre,
             descripcion: tipo.descripcion || '',
             activo: tipo.activo,
-            cantidadDisponible: tipo.cantidadDisponible 
+            cantidadDisponible: tipo.cantidadDisponible
         });
         this.mostrarFormulario = true;
     }
@@ -102,6 +99,7 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
         this.tipoForm.reset();
     }
 
+    // Decide entre crear o actualizar según el modo actual del formulario.
     guardar(): void {
         if (this.tipoForm.invalid) {
             this.tipoForm.markAllAsTouched();
@@ -133,12 +131,19 @@ export class TiposRequerimientoComponent implements OnInit, OnDestroy {
         );
     }
 
+    // Elimina el recurso y corrige la página si quedó vacía.
     eliminar(tipo: TipoRequerimientoModel): void {
         if (!confirm(`¿Eliminar "${tipo.nombre}"? Esta acción no se puede deshacer.`)) return;
 
         this.subs.add(
             this.tipoService.eliminar(tipo.id).subscribe({
-                next: () => { this.cargarResumen(); this.cargarTipos(); },
+                next: () => {
+                    if (this.tipos.length === 1 && this.paginaActual > 0) {
+                        this.paginaActual--;
+                    }
+                    this.cargarResumen();
+                    this.cargarTipos();
+                },
                 error: (err) => {
                     const msg = err.error?.error || 'Error eliminando el tipo';
                     alert(msg);

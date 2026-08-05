@@ -1,124 +1,217 @@
-<main class="register-page">
-  <section class="register-shell" aria-labelledby="register-title">
-    <header class="register-header">
-      <a routerLink="/auth/login" class="brand-link">
-        <img src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
+<main class="register-page p-md-4">
+  <section class="register-shell mx-auto" aria-labelledby="register-title">
+    <!-- Cabecera con identidad institucional e introducción al registro. -->
+    <header class="register-header d-flex flex-column flex-md-row align-items-md-center gap-4 p-4">
+      <a routerLink="/auth/login" class="brand-link d-block pe-md-4">
+        <img
+          class="d-block w-100"
+          src="https://unibe.edu.ec/wp-content/uploads/2021/11/LOGO-UNIBE-BLANCO-e1783087253145.png"
           alt="Universidad Iberoamericana del Ecuador">
       </a>
       <div>
         <span>{{ isAdminRegistration ? 'Gestión administrativa' : 'Sistema de Reservas' }}</span>
-        <h1 id="register-title">
+        <h1 id="register-title" class="my-1">
           {{ isAdminRegistration ? 'Registrar administrador' : 'Crear una cuenta' }}
         </h1>
-        <p>Completa tus datos para acceder a la reserva del auditorio.</p>
+        <p class="mb-0">Completa tus datos para acceder a la reserva del auditorio.</p>
       </div>
     </header>
 
-    <div class="register-body">
-      <div *ngIf="isAdminRegistration" class="notice notice--info">
+    <div class="register-body p-4">
+      <div *ngIf="isAdminRegistration" class="alert alert-info d-flex align-items-center gap-2" role="status">
         <i class="fas fa-shield-alt" aria-hidden="true"></i>
-        <div><strong>Registro administrativo</strong><span>Esta cuenta tendrá permisos de administración.</span></div>
+        <div class="d-flex flex-column">
+          <strong>Registro administrativo</strong>
+          <span>Esta cuenta tendrá permisos de administración.</span>
+        </div>
       </div>
 
-      <div *ngIf="message" class="notice notice--success" role="status">
-        <i class="fas fa-check-circle" aria-hidden="true"></i><span>{{ message }}</span>
-        <button type="button" (click)="message = ''" aria-label="Cerrar mensaje">&times;</button>
+      <div *ngIf="message" class="alert alert-success d-flex align-items-center gap-2" role="status">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span>{{ message }}</span>
+        <button type="button" class="btn-close ms-auto" (click)="message = ''" aria-label="Cerrar mensaje"></button>
       </div>
 
-      <div *ngIf="error" class="notice notice--error" role="alert">
-        <i class="fas fa-circle-exclamation" aria-hidden="true"></i><span>{{ error }}</span>
-        <button type="button" (click)="error = ''" aria-label="Cerrar mensaje">&times;</button>
+      <div *ngIf="error" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <span>{{ error }}</span>
+        <button type="button" class="btn-close ms-auto" (click)="error = ''" aria-label="Cerrar mensaje"></button>
       </div>
 
-      <form (ngSubmit)="register(registerForm)" #registerForm="ngForm" class="register-form">
+      <!-- Formulario con información personal, datos de acceso y validación de contraseñas. -->
+      <form (ngSubmit)="register(registerForm)" #registerForm="ngForm" class="d-flex flex-column gap-4">
         <fieldset>
-          <legend><span>1</span> Información personal</legend>
-          <div class="fields-grid">
-            <div class="form-field">
-              <label for="cedula">Cédula <em>*</em></label>
-              <input type="text" id="cedula" [(ngModel)]="userData.username" name="username" #cedulaModel="ngModel"
-                required (input)="soloNumeros('username')" inputmode="numeric" autocomplete="off"
-                placeholder="Ej. 1722570445" pattern="\d{10}" minlength="10" maxlength="10"
+          <legend class="d-flex align-items-center gap-2 w-100 pb-2 mb-3 border-bottom">
+            <span class="step-number d-inline-flex align-items-center justify-content-center">1</span>
+            Información personal
+          </legend>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="cedula">Cédula <em>*</em></label>
+              <input
+                class="form-control"
+                type="text"
+                id="cedula"
+                [(ngModel)]="userData.username"
+                name="username"
+                #cedulaModel="ngModel"
+                required
+                (input)="soloNumeros('username')"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="Ej. 1722570445"
+                pattern="\d{10}"
+                minlength="10"
+                maxlength="10"
                 [class.is-invalid]="cedulaModel.invalid && (cedulaModel.dirty || cedulaModel.touched)"
                 [class.is-valid]="cedulaModel.valid && cedulaModel.dirty">
-              <small *ngIf="cedulaModel.invalid && (cedulaModel.dirty || cedulaModel.touched)" class="field-error">La
-                cédula debe tener exactamente 10 números.</small>
-              <small *ngIf="cedulaModel.valid || !cedulaModel.dirty" class="field-hint">Ingresa los 10 dígitos, sin
-                letras ni guiones.</small>
+              <small *ngIf="cedulaModel.invalid && (cedulaModel.dirty || cedulaModel.touched)" class="field-error">
+                La cédula debe tener exactamente 10 números.
+              </small>
+              <small *ngIf="cedulaModel.valid || !cedulaModel.dirty" class="field-hint">
+                Ingresa los 10 dígitos, sin letras ni guiones.
+              </small>
             </div>
 
-            <div class="form-field">
-              <label for="telefono">Teléfono <em>*</em></label>
-              <input type="tel" id="telefono" [(ngModel)]="userData.telefono" name="telefono" #telefonoModel="ngModel"
-                required (input)="soloNumeros('telefono')" inputmode="numeric" autocomplete="tel"
-                placeholder="Ej. 0991234567" pattern="\d{10}" minlength="10" maxlength="10"
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="telefono">Teléfono <em>*</em></label>
+              <input
+                class="form-control"
+                type="tel"
+                id="telefono"
+                [(ngModel)]="userData.telefono"
+                name="telefono"
+                #telefonoModel="ngModel"
+                required
+                (input)="soloNumeros('telefono')"
+                inputmode="numeric"
+                autocomplete="tel"
+                placeholder="Ej. 0991234567"
+                pattern="\d{10}"
+                minlength="10"
+                maxlength="10"
                 [class.is-invalid]="telefonoModel.invalid && (telefonoModel.dirty || telefonoModel.touched)"
                 [class.is-valid]="telefonoModel.valid && telefonoModel.dirty">
-              <small *ngIf="telefonoModel.invalid && (telefonoModel.dirty || telefonoModel.touched)"
-                class="field-error">El teléfono debe tener exactamente 10 números.</small>
-              <small *ngIf="telefonoModel.valid || !telefonoModel.dirty" class="field-hint">Escribe 10 números, sin
-                espacios ni guiones.</small>
+              <small *ngIf="telefonoModel.invalid && (telefonoModel.dirty || telefonoModel.touched)" class="field-error">
+                El teléfono debe tener exactamente 10 números.
+              </small>
+              <small *ngIf="telefonoModel.valid || !telefonoModel.dirty" class="field-hint">
+                Escribe 10 números, sin espacios ni guiones.
+              </small>
             </div>
 
-            <div class="form-field">
-              <label for="nombre">Nombre <em>*</em></label>
-              <input type="text" id="nombre" [(ngModel)]="userData.nombre" name="nombre" #nombreModel="ngModel" required
-                (input)="soloLetras('nombre')" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$"
-                autocomplete="given-name" placeholder="Ej. Bryan"
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="nombre">Nombre <em>*</em></label>
+              <input
+                class="form-control"
+                type="text"
+                id="nombre"
+                [(ngModel)]="userData.nombre"
+                name="nombre"
+                #nombreModel="ngModel"
+                required
+                (input)="soloLetras('nombre')"
+                minlength="2"
+                maxlength="100"
+                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$"
+                autocomplete="given-name"
+                placeholder="Ej. Bryan"
                 [class.is-invalid]="nombreModel.invalid && (nombreModel.dirty || nombreModel.touched)"
                 [class.is-valid]="nombreModel.valid && nombreModel.dirty">
-              <small *ngIf="nombreModel.invalid && (nombreModel.dirty || nombreModel.touched)"
-                class="field-error">Escribe al menos 2 letras; no utilices números.</small>
-              <small *ngIf="nombreModel.valid || !nombreModel.dirty" class="field-hint">Puedes utilizar tildes,
-                solo letras y sin espacios.</small>
+              <small *ngIf="nombreModel.invalid && (nombreModel.dirty || nombreModel.touched)" class="field-error">
+                Escribe al menos 2 letras; no utilices números.
+              </small>
+              <small *ngIf="nombreModel.valid || !nombreModel.dirty" class="field-hint">
+                Puedes utilizar tildes, solo letras y sin espacios.
+              </small>
             </div>
 
-            <div class="form-field">
-              <label for="apellido">Apellido <em>*</em></label>
-              <input type="text" id="apellido" [(ngModel)]="userData.apellido" name="apellido" #apellidoModel="ngModel"
-                required (input)="soloLetras('apellido')" minlength="2" maxlength="100"
-                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$" autocomplete="family-name"
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="apellido">Apellido <em>*</em></label>
+              <input
+                class="form-control"
+                type="text"
+                id="apellido"
+                [(ngModel)]="userData.apellido"
+                name="apellido"
+                #apellidoModel="ngModel"
+                required
+                (input)="soloLetras('apellido')"
+                minlength="2"
+                maxlength="100"
+                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+$"
+                autocomplete="family-name"
                 placeholder="Ej. López"
                 [class.is-invalid]="apellidoModel.invalid && (apellidoModel.dirty || apellidoModel.touched)"
                 [class.is-valid]="apellidoModel.valid && apellidoModel.dirty">
-              <small *ngIf="apellidoModel.invalid && (apellidoModel.dirty || apellidoModel.touched)"
-                class="field-error">Escribe al menos 2 letras; no utilices números.</small>
-              <small *ngIf="apellidoModel.valid || !apellidoModel.dirty" class="field-hint">Puedes utilizar tildes,
-                solo letras y sin espacios.</small>
+              <small *ngIf="apellidoModel.invalid && (apellidoModel.dirty || apellidoModel.touched)" class="field-error">
+                Escribe al menos 2 letras; no utilices números.
+              </small>
+              <small *ngIf="apellidoModel.valid || !apellidoModel.dirty" class="field-hint">
+                Puedes utilizar tildes, solo letras y sin espacios.
+              </small>
             </div>
           </div>
         </fieldset>
 
         <fieldset>
-          <legend><span>2</span> Datos de acceso</legend>
-          <div class="fields-grid">
-            <div class="form-field form-field--wide">
-              <label for="correo">Correo institucional <em>*</em></label>
-              <input type="email" id="correo" [(ngModel)]="userData.correoInstitucional" #correoModel="ngModel"
-                name="correoInstitucional" required email autocomplete="email" placeholder="usuario@ejemplo.com"
+          <legend class="d-flex align-items-center gap-2 w-100 pb-2 mb-3 border-bottom">
+            <span class="step-number d-inline-flex align-items-center justify-content-center">2</span>
+            Datos de acceso
+          </legend>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="correo">Correo institucional <em>*</em></label>
+              <input
+                class="form-control"
+                type="email"
+                id="correo"
+                [(ngModel)]="userData.correoInstitucional"
+                #correoModel="ngModel"
+                name="correoInstitucional"
+                required
+                email
+                autocomplete="email"
+                placeholder="usuario@ejemplo.com"
                 [class.is-invalid]="correoModel.invalid && (correoModel.dirty || correoModel.touched)"
                 [class.is-valid]="correoModel.valid && correoModel.dirty">
-              <small *ngIf="correoModel.invalid && (correoModel.dirty || correoModel.touched)"
-                class="field-error">Ingresa un correo válido, por ejemplo usuario&#64;ejemplo.com.</small>
-              <small *ngIf="correoModel.valid || !correoModel.dirty" class="field-hint">Ingresa un correo electrónico al
-                que tengas acceso.</small>
+              <small *ngIf="correoModel.invalid && (correoModel.dirty || correoModel.touched)" class="field-error">
+                Ingresa un correo válido, por ejemplo usuario&#64;ejemplo.com.
+              </small>
+              <small *ngIf="correoModel.valid || !correoModel.dirty" class="field-hint">
+                Ingresa un correo electrónico al que tengas acceso.
+              </small>
             </div>
 
-            <div class="form-field">
-              <label for="password">Contraseña <em>*</em></label>
-              <div class="password-control">
-                <input [type]="mostrarPassword ? 'text' : 'password'" id="password" [(ngModel)]="userData.password"
-                  name="password" #passwordModel="ngModel" required minlength="8" maxlength="64"
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="password">Contraseña <em>*</em></label>
+              <div class="password-control position-relative">
+                <input
+                  class="form-control pe-5"
+                  [type]="mostrarPassword ? 'text' : 'password'"
+                  id="password"
+                  [(ngModel)]="userData.password"
+                  name="password"
+                  #passwordModel="ngModel"
+                  required
+                  minlength="8"
+                  maxlength="64"
                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,64}$"
-                  autocomplete="new-password" placeholder="Crea una contraseña"
+                  autocomplete="new-password"
+                  placeholder="Crea una contraseña"
                   [class.is-invalid]="passwordModel.invalid && (passwordModel.dirty || passwordModel.touched)"
                   [class.is-valid]="passwordModel.valid && passwordModel.dirty">
-                <button type="button" (click)="alternarPassword()"
+                <button
+                  type="button"
+                  class="password-toggle btn"
+                  (click)="alternarPassword()"
                   [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                   <i class="fas" [ngClass]="mostrarPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
                 </button>
               </div>
-              <div class="password-rules" aria-live="polite">
+              <div class="password-rules d-flex flex-wrap gap-2 mt-2" aria-live="polite">
                 <span [class.met]="passwordTieneLongitud()">8 caracteres</span>
                 <span [class.met]="passwordTieneMayuscula()">Una mayúscula</span>
                 <span [class.met]="passwordTieneMinuscula()">Una minúscula</span>
@@ -127,38 +220,56 @@
               </div>
             </div>
 
-            <div class="form-field">
-              <label for="confirmPassword">Confirmar contraseña <em>*</em></label>
-              <div class="password-control">
-                <input [type]="mostrarConfirmPassword ? 'text' : 'password'" id="confirmPassword"
-                  [(ngModel)]="confirmPassword" name="confirmPassword" #confirmModel="ngModel" required minlength="8"
-                  maxlength="64" autocomplete="new-password" placeholder="Repite la contraseña"
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="confirmPassword">Confirmar contraseña <em>*</em></label>
+              <div class="password-control position-relative">
+                <input
+                  class="form-control pe-5"
+                  [type]="mostrarConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword"
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  #confirmModel="ngModel"
+                  required
+                  minlength="8"
+                  maxlength="64"
+                  autocomplete="new-password"
+                  placeholder="Repite la contraseña"
                   [class.is-invalid]="confirmModel.dirty && confirmPassword !== userData.password"
                   [class.is-valid]="confirmModel.dirty && !!confirmPassword && confirmPassword === userData.password">
-                <button type="button" (click)="alternarConfirmPassword()"
+                <button
+                  type="button"
+                  class="password-toggle btn"
+                  (click)="alternarConfirmPassword()"
                   [attr.aria-label]="mostrarConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                   <i class="fas" [ngClass]="mostrarConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
                 </button>
               </div>
-              <small *ngIf="confirmModel.dirty && confirmPassword !== userData.password" class="field-error">Las
-                contraseñas todavía no coinciden.</small>
-              <small *ngIf="confirmModel.dirty && !!confirmPassword && confirmPassword === userData.password"
-                class="field-success">Las contraseñas coinciden.</small>
+              <small *ngIf="confirmModel.dirty && confirmPassword !== userData.password" class="field-error">
+                Las contraseñas todavía no coinciden.
+              </small>
+              <small
+                *ngIf="confirmModel.dirty && !!confirmPassword && confirmPassword === userData.password"
+                class="field-success">
+                Las contraseñas coinciden.
+              </small>
             </div>
           </div>
         </fieldset>
 
         <input type="hidden" [(ngModel)]="userData.role" name="role">
 
-        <div class="form-actions">
-          <button type="button" class="button button--secondary" (click)="goToLogin()">
-            <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al acceso
+        <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 px-4 py-2" (click)="goToLogin()">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            Volver al acceso
           </button>
-          <button type="submit" class="button button--primary"
+          <button
+            type="submit"
+            class="btn btn-primary d-flex align-items-center justify-content-center gap-2 px-4 py-2"
             [disabled]="loading || !registerForm.form.valid || confirmPassword !== userData.password">
             <span *ngIf="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-            <span>{{ loading ? 'Registrando...' : (isAdminRegistration ? 'Registrar administrador' : 'Crear mi cuenta')
-              }}</span>
+            <span>{{ loading ? 'Registrando...' : (isAdminRegistration ? 'Registrar administrador' : 'Crear mi cuenta') }}</span>
           </button>
         </div>
       </form>

@@ -1,3 +1,4 @@
+// GUARD DE AUTENTICACIÓN: impide entrar a rutas privadas sin una sesión JWT válida.
 import { Injectable } from '@angular/core';
 import { Router, CanActivate } from '@angular/router';
 import { AuthService } from '../services/auth.service';

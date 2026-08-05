@@ -1,3 +1,4 @@
+// ENTORNO DE DESARROLLO: define la dirección base utilizada para comunicarse con el backend.
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8081',

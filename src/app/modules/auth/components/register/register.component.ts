@@ -44,6 +44,7 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  // Valida todos los datos y solicita la creación de la cuenta.
   register(form: NgForm): void {
     // Validaciones básicas
     if (this.userData.password !== this.confirmPassword) {
@@ -148,10 +149,12 @@ export class RegisterComponent implements OnInit {
     return true;
   }
 
+  // Limpia caracteres no permitidos en cédula y teléfono.
   soloNumeros(campo: 'username' | 'telefono'): void {
     this.userData[campo] = this.userData[campo].replace(/\D/g, '').slice(0, 10);
   }
 
+  // Limpia caracteres no permitidos en nombre y apellido.
   soloLetras(campo: 'nombre' | 'apellido'): void {
     this.userData[campo] = this.userData[campo].replace(/[^\p{L}]/gu, '');
   }

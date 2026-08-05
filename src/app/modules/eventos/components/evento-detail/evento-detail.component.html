@@ -1,171 +1,228 @@
-<section class="event-detail-page">
-  <div *ngIf="loading" class="loading-card"><span class="spinner-border"></span>
-    <h2>Cargando detalles</h2>
-    <p>Estamos consultando la información de la reserva.</p>
+<main class="event-detail-page container-xxl px-0">
+  <div *ngIf="loading" class="message-state card d-flex flex-column align-items-center justify-content-center text-center">
+    <span class="spinner-border" aria-hidden="true"></span>
+    <h2 class="mt-3 mb-1">Cargando detalles</h2>
+    <p class="mb-0">Estamos consultando la información de la reserva.</p>
   </div>
-  <div *ngIf="!loading && error" class="message-state"><i class="fas fa-circle-exclamation"></i>
-    <h2>No pudimos cargar el evento</h2>
-    <p>{{ error }}</p><button (click)="volverALista()">Volver a eventos</button>
+
+  <div *ngIf="!loading && error"
+    class="message-state card d-flex flex-column align-items-center justify-content-center text-center">
+    <i class="message-icon fas fa-circle-exclamation" aria-hidden="true"></i>
+    <h2 class="mt-3 mb-1">No pudimos cargar el evento</h2>
+    <p>{{ error }}</p>
+    <button type="button" class="btn btn-primary" (click)="volverALista()">Volver a eventos</button>
   </div>
 
   <ng-container *ngIf="!loading && evento">
-    <nav class="breadcrumb-bar"><button (click)="volverALista()"><i class="fas fa-arrow-left"></i> {{ isAdmin ?
-        'Eventos' : 'Mis reservas' }}</button><span>/</span><strong>Detalle del evento</strong></nav>
+    <nav class="breadcrumb-bar d-flex align-items-center gap-2 px-3 py-2" aria-label="Navegación">
+      <button type="button" class="btn btn-link d-inline-flex align-items-center gap-2 p-0" (click)="volverALista()">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>{{ isAdmin ? 'Eventos' : 'Mis reservas' }}
+      </button>
+      <span>/</span>
+      <strong>Detalle del evento</strong>
+    </nav>
 
-    <header class="detail-hero">
-      <div><span class="status" [ngClass]="'status--' + evento.estado.toLowerCase()"><i class="fas fa-circle"></i>{{
-          getEstadoText(evento.estado) }}</span>
-        <h1>{{ evento.nombreEvento }}</h1>
-        <p>Reserva del Auditorio UNIB.E · Solicitud #{{ evento.id }}</p>
+    <header class="detail-hero d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 p-4">
+      <div>
+        <span class="status badge" [ngClass]="'status--' + evento.estado.toLowerCase()">
+          <i class="fas fa-circle me-1" aria-hidden="true"></i>{{ getEstadoText(evento.estado) }}
+        </span>
+        <h1 class="my-2">{{ evento.nombreEvento }}</h1>
+        <p class="mb-0">Reserva del Auditorio UNIB.E · Solicitud #{{ evento.id }}</p>
       </div>
-      <div class="detail-actions">
+      <div class="d-flex flex-wrap gap-2">
         <button *ngIf="isAdmin && (evento.estado === 'PENDIENTE' || evento.estado === 'APROBADO')"
-          (click)="editarEvento()"><i class="far fa-pen-to-square"></i> Editar</button>
-        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" class="approve" (click)="aprobarEvento()"><i
-            class="fas fa-check"></i> Aprobar</button>
-        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" (click)="rechazarEvento()"><i class="fas fa-xmark"></i>
-          Rechazar</button>
-        <button *ngIf="isAdmin && evento.estado === 'APROBADO'" class="cancel" (click)="cancelarReserva()"><i
-            class="fas fa-ban"></i> Cancelar reserva</button>
-        <button *ngIf="puedeEliminar()" (click)="eliminarEvento()"><i class="far fa-trash-can"></i> Eliminar</button>
+          type="button" class="btn btn-light" (click)="editarEvento()">
+          <i class="far fa-pen-to-square me-1" aria-hidden="true"></i>Editar
+        </button>
+        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" type="button" class="btn btn-success"
+          (click)="aprobarEvento()">
+          <i class="fas fa-check me-1" aria-hidden="true"></i>Aprobar
+        </button>
+        <button *ngIf="isAdmin && evento.estado === 'PENDIENTE'" type="button" class="btn btn-outline-light"
+          (click)="rechazarEvento()">
+          <i class="fas fa-xmark me-1" aria-hidden="true"></i>Rechazar
+        </button>
+        <button *ngIf="isAdmin && evento.estado === 'APROBADO'" type="button" class="btn btn-warning"
+          (click)="cancelarReserva()">
+          <i class="fas fa-ban me-1" aria-hidden="true"></i>Cancelar reserva
+        </button>
+        <button *ngIf="puedeEliminar()" type="button" class="btn btn-danger" (click)="eliminarEvento()">
+          <i class="far fa-trash-can me-1" aria-hidden="true"></i>Eliminar
+        </button>
       </div>
     </header>
 
-    <div class="event-summary">
-      <article><span><i class="far fa-calendar"></i></span>
-        <div><small>Fecha del evento</small><strong>{{ formatFecha(evento.fechaEvento) }}</strong></div>
+    <!-- RESUMEN PRINCIPAL: fecha, horario, asistentes y disposición. -->
+    <section class="event-summary row g-0" aria-label="Resumen del evento">
+      <article class="col-12 col-sm-6 col-xl-3 d-flex align-items-center gap-3 p-3">
+        <span class="summary-icon"><i class="far fa-calendar" aria-hidden="true"></i></span>
+        <div><small class="d-block">Fecha del evento</small><strong>{{ formatFecha(evento.fechaEvento) }}</strong></div>
       </article>
-      <article><span><i class="far fa-clock"></i></span>
-        <div><small>Horario reservado</small><strong>{{ formatHora(evento.horaInicio) }} – {{ formatHora(evento.horaFin)
-            }}</strong></div>
+      <article class="col-12 col-sm-6 col-xl-3 d-flex align-items-center gap-3 p-3">
+        <span class="summary-icon summary-icon--yellow"><i class="far fa-clock" aria-hidden="true"></i></span>
+        <div><small class="d-block">Horario reservado</small><strong>{{ formatHora(evento.horaInicio) }} – {{ formatHora(evento.horaFin) }}</strong></div>
       </article>
-      <article><span><i class="fas fa-users"></i></span>
-        <div><small>Asistencia estimada</small><strong>{{ evento.numeroAsistentes }} personas</strong></div>
+      <article class="col-12 col-sm-6 col-xl-3 d-flex align-items-center gap-3 p-3">
+        <span class="summary-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+        <div><small class="d-block">Asistencia estimada</small><strong>{{ evento.numeroAsistentes }} personas</strong></div>
       </article>
-      <article><span><i class="fas fa-chair"></i></span>
-        <div><small>Disposición</small><strong>{{ getDisposicionText(evento.tipoDisposicion) }}</strong></div>
+      <article class="col-12 col-sm-6 col-xl-3 d-flex align-items-center gap-3 p-3">
+        <span class="summary-icon"><i class="fas fa-chair" aria-hidden="true"></i></span>
+        <div><small class="d-block">Disposición</small><strong>{{ getDisposicionText(evento.tipoDisposicion) }}</strong></div>
       </article>
-    </div>
+    </section>
 
-    <div *ngIf="evento.motivoRechazo" class="rejection-banner"><i class="fas fa-circle-exclamation"></i>
-      <div><strong>{{ evento.estado === 'CANCELADO' ? 'Motivo de la cancelación' : 'Motivo del rechazo' }}</strong>
-        <p>{{ evento.motivoRechazo }}</p>
+    <div *ngIf="evento.motivoRechazo" class="rejection-banner alert d-flex gap-3 mt-3 mb-0">
+      <i class="fas fa-circle-exclamation mt-1" aria-hidden="true"></i>
+      <div>
+        <strong>{{ evento.estado === 'CANCELADO' ? 'Motivo de la cancelación' : 'Motivo del rechazo' }}</strong>
+        <p class="mb-0">{{ evento.motivoRechazo }}</p>
       </div>
     </div>
 
-    <div class="detail-grid">
-      <main class="main-column">
-        <section class="detail-card">
-          <header><span><i class="fas fa-align-left"></i></span>
-            <div>
-              <h2>Descripción del evento</h2>
-              <p>Objetivo y actividades planificadas</p>
-            </div>
+    <!-- INFORMACIÓN COMPLETA: evento a la izquierda y contactos/estado a la derecha. -->
+    <div class="row g-3 mt-0">
+      <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+        <section class="detail-card card">
+          <header class="card-header d-flex align-items-center gap-3 p-3">
+            <span class="section-icon"><i class="fas fa-align-left" aria-hidden="true"></i></span>
+            <div><h2 class="mb-1">Descripción del evento</h2><p class="mb-0">Objetivo y actividades planificadas</p></div>
           </header>
-          <div class="description-content">
-            <p>{{ evento.descripcion || 'No se registró una descripción.' }}</p>
+          <div class="card-body"><p class="mb-0">{{ evento.descripcion || 'No se registró una descripción.' }}</p></div>
+        </section>
+
+        <section class="detail-card card">
+          <header class="card-header d-flex align-items-center gap-3 p-3">
+            <span class="section-icon"><i class="fas fa-sliders" aria-hidden="true"></i></span>
+            <div><h2 class="mb-1">Características de la reserva</h2><p class="mb-0">Condiciones definidas para los asistentes</p></div>
+          </header>
+          <div class="card-body row g-3">
+            <div class="col-12 col-md-6">
+              <article class="feature-item d-flex gap-3 h-100 p-3" [class.active]="evento.publicoExterno">
+                <i class="fas fa-earth-americas" aria-hidden="true"></i>
+                <div>
+                  <span class="feature-value badge mb-2" [class.yes]="evento.publicoExterno">{{ evento.publicoExterno ? 'Sí' : 'No' }}</span>
+                  <strong class="d-block">Público externo</strong>
+                  <p class="mb-0">{{ evento.publicoExterno ? 'Participarán personas ajenas a la universidad.' : 'Actividad para la comunidad universitaria.' }}</p>
+                </div>
+              </article>
+            </div>
+            <div class="col-12 col-md-6">
+              <article class="feature-item d-flex gap-3 h-100 p-3" [class.active]="evento.requiereRegistroPrevio">
+                <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                <div>
+                  <span class="feature-value badge mb-2" [class.yes]="evento.requiereRegistroPrevio">{{ evento.requiereRegistroPrevio ? 'Sí' : 'No' }}</span>
+                  <strong class="d-block">Requiere registro previo</strong>
+                  <p class="mb-0">{{ evento.requiereRegistroPrevio ? 'Los asistentes deberán registrarse antes.' : 'No necesita registro previo.' }}</p>
+                </div>
+              </article>
+            </div>
           </div>
         </section>
 
-        <section class="detail-card">
-          <header><span><i class="fas fa-sliders"></i></span>
-            <div>
-              <h2>Características de la reserva</h2>
-              <p>Condiciones definidas para los asistentes</p>
-            </div>
+        <section class="detail-card card">
+          <header class="card-header d-flex align-items-center gap-3 p-3">
+            <span class="section-icon"><i class="fas fa-toolbox" aria-hidden="true"></i></span>
+            <div><h2 class="mb-1">Recursos técnicos</h2><p class="mb-0">Equipos solicitados para el evento</p></div>
+            <span class="resource-count badge ms-auto">{{ evento.requerimientos.length }} recurso(s)</span>
           </header>
-          <div class="feature-grid">
-            <article [class.active]="evento.publicoExterno"><i class="fas fa-earth-americas"></i>
-              <div><em [class.yes]="evento.publicoExterno">{{ evento.publicoExterno ? 'Sí' : 'No' }}</em><strong>Público
-                  externo</strong>
-                <p>{{ evento.publicoExterno ? 'Participarán personas ajenas a la universidad.' : 'Actividad para la
-                  comunidad universitaria.' }}</p>
+          <div *ngIf="evento.requerimientos.length" class="list-group list-group-flush">
+            <article *ngFor="let req of evento.requerimientos"
+              class="list-group-item d-flex align-items-center gap-3 p-3">
+              <span class="resource-icon"><i class="fas fa-box" aria-hidden="true"></i></span>
+              <div class="flex-grow-1"><strong class="d-block">{{ req.tipo.nombre }}</strong><small>Cantidad solicitada: {{ req.cantidad }}</small></div>
+              <span class="requirement badge" [class.requirement--required]="req.requerido">{{ req.requerido ? 'Indispensable' : 'Opcional' }}</span>
+            </article>
+          </div>
+          <div *ngIf="!evento.requerimientos.length" class="d-flex align-items-center gap-3 p-4">
+            <i class="empty-resource fas fa-box-open" aria-hidden="true"></i>
+            <div><strong>Sin recursos adicionales</strong><p class="mb-0">Este evento no necesita equipos específicos.</p></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="col-12 col-xl-4 d-flex flex-column gap-3">
+        <section class="side-card card">
+          <header class="card-header d-flex align-items-center gap-3 p-3">
+            <span class="section-icon"><i class="far fa-address-card" aria-hidden="true"></i></span>
+            <div><h2 class="mb-1">Responsable del evento</h2><p class="mb-0">Contacto para coordinación</p></div>
+          </header>
+          <div class="card-body">
+            <div class="person d-flex align-items-center gap-3 pb-3">
+              <b>{{ evento.responsable.nombre.charAt(0).toUpperCase() }}</b>
+              <div><strong class="d-block">{{ evento.responsable.nombre }}</strong><small>Responsable registrado</small></div>
+            </div>
+            <a class="contact-row d-flex align-items-center gap-3 py-3" [href]="'mailto:' + evento.responsable.correo">
+              <i class="far fa-envelope" aria-hidden="true"></i><span><small class="d-block">Correo electrónico</small><strong>{{ evento.responsable.correo }}</strong></span>
+            </a>
+            <a class="contact-row d-flex align-items-center gap-3 py-3" [href]="'tel:' + evento.responsable.telefono">
+              <i class="fas fa-phone" aria-hidden="true"></i><span><small class="d-block">Teléfono</small><strong>{{ evento.responsable.telefono }}</strong></span>
+            </a>
+          </div>
+        </section>
+
+        <section *ngIf="isAdmin" class="side-card card">
+          <header class="card-header d-flex align-items-center gap-3 p-3">
+            <span class="section-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+            <div><h2 class="mb-1">Usuario solicitante</h2><p class="mb-0">Cuenta que creó la reserva</p></div>
+          </header>
+          <div class="card-body">
+            <ng-container *ngIf="evento.usuarioSolicitante; else noRequester">
+              <div class="person d-flex align-items-center gap-3 pb-3">
+                <b>{{ (evento.usuarioSolicitante.nombre || evento.usuarioSolicitante.username).charAt(0).toUpperCase() }}</b>
+                <div><strong class="d-block">{{ evento.usuarioSolicitante.nombre }} {{ evento.usuarioSolicitante.apellido }}</strong><small>{{ evento.usuarioSolicitante.username }}</small></div>
               </div>
-            </article>
-            <article [class.active]="evento.requiereRegistroPrevio"><i class="fas fa-clipboard-check"></i>
-              <div><em [class.yes]="evento.requiereRegistroPrevio">{{ evento.requiereRegistroPrevio ? 'Sí' : 'No'
-                  }}</em><strong>Requiere registro previo</strong>
-                <p>{{ evento.requiereRegistroPrevio ? 'Los asistentes deberán registrarse antes.' : 'No necesita
-                  registro previo.' }}</p>
-              </div>
-            </article>
+              <p class="contact-text"><i class="far fa-envelope me-2" aria-hidden="true"></i>{{ evento.usuarioSolicitante.correoInstitucional }}</p>
+              <p class="contact-text mb-0"><i class="fas fa-phone me-2" aria-hidden="true"></i>{{ evento.usuarioSolicitante.telefono || 'No registrado' }}</p>
+            </ng-container>
+            <ng-template #noRequester><p class="mb-0">No se recibió información del solicitante.</p></ng-template>
           </div>
         </section>
 
-        <section class="detail-card">
-          <header><span><i class="fas fa-toolbox"></i></span>
-            <div>
-              <h2>Recursos técnicos</h2>
-              <p>Equipos solicitados para el evento</p>
-            </div><strong class="resource-count">{{ evento.requerimientos.length }} recurso(s)</strong>
-          </header>
-          <div *ngIf="evento.requerimientos.length" class="resource-list">
-            <article *ngFor="let req of evento.requerimientos"><span><i class="fas fa-box"></i></span>
-              <div><strong>{{ req.tipo.nombre }}</strong><small>Cantidad solicitada: {{ req.cantidad }}</small></div><em
-                [class.required]="req.requerido">{{ req.requerido ? 'Indispensable' : 'Opcional' }}</em>
-            </article>
-          </div>
-          <div *ngIf="!evento.requerimientos.length" class="resources-empty"><i class="fas fa-box-open"></i>
-            <div><strong>Sin recursos adicionales</strong>
-              <p>Este evento no necesita equipos específicos.</p>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <aside class="side-column">
-        <section class="contact-card">
-          <header><span><i class="far fa-address-card"></i></span>
-            <div>
-              <h2>Responsable del evento</h2>
-              <p>Contacto para coordinación</p>
-            </div>
-          </header>
-          <div class="person"><b>{{ evento.responsable.nombre.charAt(0).toUpperCase() }}</b>
-            <div><strong>{{ evento.responsable.nombre }}</strong><small>Responsable registrado</small></div>
-          </div><a [href]="'mailto:' + evento.responsable.correo"><i class="far fa-envelope"></i><span><small>Correo
-                electrónico</small><strong>{{ evento.responsable.correo }}</strong></span></a><a
-            [href]="'tel:' + evento.responsable.telefono"><i
-              class="fas fa-phone"></i><span><small>Teléfono</small><strong>{{ evento.responsable.telefono
-                }}</strong></span></a>
-        </section>
-
-        <section *ngIf="isAdmin" class="requester-card">
-          <header><span><i class="fas fa-user-shield"></i></span>
-            <div>
-              <h2>Usuario solicitante</h2>
-              <p>Cuenta que creó la reserva</p>
-            </div>
-          </header><ng-container *ngIf="evento.usuarioSolicitante; else noRequester">
-            <div class="person requester"><b>{{ (evento.usuarioSolicitante.nombre ||
-                evento.usuarioSolicitante.username).charAt(0).toUpperCase() }}</b>
-              <div><strong>{{ evento.usuarioSolicitante.nombre }} {{ evento.usuarioSolicitante.apellido
-                  }}</strong><small>{{ evento.usuarioSolicitante.username }}</small></div>
-            </div>
-            <p><i class="far fa-envelope"></i>{{ evento.usuarioSolicitante.correoInstitucional }}</p>
-            <p><i class="fas fa-phone"></i>{{ evento.usuarioSolicitante.telefono || 'No registrado' }}</p>
-          </ng-container><ng-template #noRequester>
-            <p>No se recibió información del solicitante.</p>
-          </ng-template>
-        </section>
-
-        <section class="process-card">
-          <h2>Estado de la solicitud</h2>
-          <div class="step done"><span><i class="fas fa-check"></i></span>
-            <p><strong>Solicitud enviada</strong>Información registrada.</p>
-          </div><i class="line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
-          <div class="step" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-clock"></i></span>
-            <p><strong>Revisión administrativa</strong>{{ evento.estado === 'PENDIENTE' ? 'Pendiente de evaluación.' :
-              'Solicitud evaluada.' }}</p>
-          </div><i class="line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
-          <div class="step" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-flag"></i></span>
-            <p><strong>Resolución</strong>{{ getEstadoText(evento.estado) }}</p>
-          </div>
+        <section class="process-card card p-3">
+          <h2 class="mb-3">Estado de la solicitud</h2>
+          <div class="step done d-flex gap-3"><span><i class="fas fa-check" aria-hidden="true"></i></span><p class="mb-0"><strong class="d-block">Solicitud enviada</strong>Información registrada.</p></div>
+          <i class="process-line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
+          <div class="step d-flex gap-3" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-clock" aria-hidden="true"></i></span><p class="mb-0"><strong class="d-block">Revisión administrativa</strong>{{ evento.estado === 'PENDIENTE' ? 'Pendiente de evaluación.' : 'Solicitud evaluada.' }}</p></div>
+          <i class="process-line" [class.done]="evento.estado !== 'PENDIENTE'"></i>
+          <div class="step d-flex gap-3" [class.done]="evento.estado !== 'PENDIENTE'"><span><i class="fas fa-flag" aria-hidden="true"></i></span><p class="mb-0"><strong class="d-block">Resolución</strong>{{ getEstadoText(evento.estado) }}</p></div>
         </section>
       </aside>
     </div>
-
-    <footer class="detail-footer"><button (click)="volverALista()"><i class="fas fa-arrow-left"></i>
-        Volver</button><span><i class="fas fa-shield-halved"></i> Información institucional protegida</span></footer>
   </ng-container>
-</section>
+
+  <!-- MODAL DE RECHAZO: solicita el motivo antes de cambiar el estado. -->
+  <div *ngIf="mostrarModalRechazo" class="modal-backdrop fade show"></div>
+  <div *ngIf="mostrarModalRechazo" class="modal fade show d-block" tabindex="-1" role="dialog"
+    aria-modal="true" aria-labelledby="reject-modal-title">
+    <div class="modal-dialog modal-dialog-centered">
+      <section class="modal-content">
+        <header class="modal-header">
+          <div>
+            <h2 id="reject-modal-title" class="modal-title fs-5">Rechazar solicitud</h2>
+            <p class="mb-0 mt-1 text-secondary small">Indica al usuario por qué no puede aprobarse esta reserva.</p>
+          </div>
+          <button type="button" class="btn-close" (click)="cerrarModalRechazo()" aria-label="Cerrar"></button>
+        </header>
+        <div class="modal-body">
+          <label class="form-label fw-semibold" for="motivoRechazo">Motivo del rechazo <span class="text-danger">*</span></label>
+          <textarea id="motivoRechazo" class="form-control" rows="4" maxlength="500"
+            [(ngModel)]="motivoRechazoInput" [ngModelOptions]="{standalone: true}"
+            placeholder="Explica de forma clara el motivo del rechazo"></textarea>
+          <div class="d-flex justify-content-between mt-2">
+            <small class="text-secondary">Este mensaje se enviará al usuario.</small>
+            <small class="text-secondary">{{ motivoRechazoInput.length }}/500</small>
+          </div>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="cerrarModalRechazo()">Cancelar</button>
+          <button type="button" class="btn btn-danger" [disabled]="!motivoRechazoInput.trim()"
+            (click)="confirmarRechazo()">
+            <i class="fas fa-xmark me-1" aria-hidden="true"></i>Confirmar rechazo
+          </button>
+        </footer>
+      </section>
+    </div>
+  </div>
+</main>

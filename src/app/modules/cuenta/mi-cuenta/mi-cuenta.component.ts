@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({ selector: 'app-mi-cuenta', templateUrl: './mi-cuenta.component.html', styleUrls: ['./mi-cuenta.component.scss'] })
 export class MiCuentaComponent implements OnInit {
   usuario: UsuarioGestion | null = null;
-  cargando = true; error = ''; mensaje = ''; mostrarActual = false; mostrarNueva = false;
+  cargando = true; error = ''; mensaje = ''; mostrarActual = false; mostrarNueva = false; mostrarConfirmacion = false;
   telefonoForm = this.fb.group({ telefono: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]] });
   passwordForm = this.fb.group({
     passwordActual: ['', Validators.required],
@@ -17,6 +17,7 @@ export class MiCuentaComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private usuarioService: UsuarioService, private authService: AuthService) {}
   ngOnInit(): void { this.cargarCuenta(); }
+  // Recupera los datos del usuario autenticado y completa el formulario.
   cargarCuenta(): void {
     this.cargando = true;
     this.usuarioService.obtenerMiCuenta().subscribe({
@@ -25,6 +26,7 @@ export class MiCuentaComponent implements OnInit {
       complete: () => this.cargando = false
     });
   }
+  // Actualiza únicamente el número telefónico permitido para el usuario.
   guardarTelefono(): void {
     if (this.telefonoForm.invalid) { this.telefonoForm.markAllAsTouched(); return; }
     this.usuarioService.actualizarMiTelefono(this.telefonoForm.controls.telefono.value!).subscribe({
@@ -32,12 +34,13 @@ export class MiCuentaComponent implements OnInit {
       error: e => this.error = this.obtenerError(e, 'No fue posible actualizar el teléfono.')
     });
   }
+  // Comprueba ambas claves y solicita el cambio de contraseña.
   cambiarPassword(): void {
     if (this.passwordForm.invalid) { this.passwordForm.markAllAsTouched(); return; }
     const d = this.passwordForm.getRawValue();
     if (d.nuevaPassword !== d.confirmarPassword) { this.error = 'Las contraseñas nuevas no coinciden.'; return; }
     this.usuarioService.cambiarMiPassword(d.passwordActual!, d.nuevaPassword!).subscribe({
-      next: () => { this.mensaje = 'Contraseña actualizada correctamente.'; this.passwordForm.reset(); this.mostrarActual=false; this.mostrarNueva=false; this.authService.updateCurrentUser({ debeCambiarPassword:false }); },
+      next: () => { this.mensaje = 'Contraseña actualizada correctamente.'; this.passwordForm.reset(); this.mostrarActual=false; this.mostrarNueva=false; this.mostrarConfirmacion=false; this.authService.updateCurrentUser({ debeCambiarPassword:false }); },
       error: e => this.error = this.obtenerError(e, 'No fue posible cambiar la contraseña.')
     });
   }

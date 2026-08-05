@@ -1,90 +1,170 @@
-<main class="account-page">
-  <div *ngIf="cargando" class="state"><span class="spinner-border"></span>
-    <p>Cargando tu información...</p>
+<main class="account-page container-xxl px-0">
+  <div *ngIf="cargando" class="state d-flex flex-column align-items-center justify-content-center gap-2 text-center">
+    <span class="spinner-border" aria-hidden="true"></span>
+    <p class="mb-0">Cargando tu información...</p>
   </div>
+
   <ng-container *ngIf="!cargando && usuario">
-    <header class="account-hero">
-      <div class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</div>
-      <div><span>Mi cuenta</span>
-        <h1>{{ usuario.nombreCompleto }}</h1>
-        <p>C.I. {{ usuario.username }}</p>
-      </div><em [class.inactive]="!usuario.activo">{{ usuario.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}</em>
+    <header class="account-hero d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-4 mb-4">
+      <div class="avatar d-inline-flex align-items-center justify-content-center flex-shrink-0">
+        {{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}
+      </div>
+      <div>
+        <span>Mi cuenta</span>
+        <h1 class="my-1">{{ usuario.nombreCompleto }}</h1>
+        <p class="mb-0">C.I. {{ usuario.username }}</p>
+      </div>
+      <em class="ms-sm-auto" [class.inactive]="!usuario.activo">
+        {{ usuario.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}
+      </em>
     </header>
-    <div *ngIf="error" class="notice error"><i class="fas fa-circle-exclamation"></i>{{ error }}<button
-        (click)="error=''">×</button></div>
-    <div *ngIf="mensaje" class="notice success"><i class="fas fa-circle-check"></i>{{ mensaje }}<button
-        (click)="mensaje=''">×</button></div>
-    <div *ngIf="usuario.debeCambiarPassword" class="password-warning"><i class="fas fa-key"></i>
-      <div><strong>Debes crear una contraseña definitiva</strong>
-        <p>Administración restableció tu acceso. Cambia la contraseña temporal desde el formulario inferior.</p>
+
+    <div *ngIf="error" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+      <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+      <span>{{ error }}</span>
+      <button type="button" class="btn-close ms-auto" (click)="error = ''" aria-label="Cerrar mensaje"></button>
+    </div>
+
+    <div *ngIf="mensaje" class="alert alert-success d-flex align-items-center gap-2" role="status">
+      <i class="fas fa-circle-check" aria-hidden="true"></i>
+      <span>{{ mensaje }}</span>
+      <button type="button" class="btn-close ms-auto" (click)="mensaje = ''" aria-label="Cerrar mensaje"></button>
+    </div>
+
+    <div *ngIf="usuario.debeCambiarPassword"
+      class="password-warning d-flex align-items-start gap-3 p-3 mb-3 rounded-3">
+      <i class="fas fa-key fs-5 mt-1" aria-hidden="true"></i>
+      <div>
+        <strong>Debes crear una contraseña definitiva</strong>
+        <p class="mb-0">
+          Administración restableció tu acceso. Cambia la contraseña temporal desde el formulario inferior.
+        </p>
       </div>
     </div>
-    <div class="account-grid">
-      <section class="profile-card">
-        <header><i class="fas fa-id-card"></i>
-          <div>
-            <h2>Información personal</h2>
-            <p>Datos registrados en tu cuenta</p>
-          </div>
-        </header>
-        <dl>
-          <div>
-            <dt>Nombre y apellido</dt>
-            <dd>{{ usuario.nombreCompleto }}</dd>
-          </div>
-          <div>
-            <dt>Cédula</dt>
-            <dd>{{ usuario.username }}</dd>
-          </div>
-          <div>
-            <dt>Correo electrónico</dt>
-            <dd>{{ usuario.correoInstitucional }}</dd>
-          </div>
-        </dl>
-        <aside><i class="fas fa-circle-info"></i>
-          <p>Para corregir nombre, apellido, cédula o correo, comunícate con Administración: <a
-              href="mailto:auditoriounibe@gmail.com">auditoriounibe&#64;gmail.com</a></p>
-        </aside>
-      </section>
-      <div class="forms-column">
-        <section class="form-card">
-          <header><i class="fas fa-phone"></i>
+
+    <div class="row g-4 align-items-start">
+      <div class="col-12 col-lg-6">
+        <!-- Tarjeta de solo lectura con los datos institucionales de la cuenta. -->
+        <section class="account-card card overflow-hidden shadow-sm">
+          <header class="card-heading d-flex align-items-center gap-3 p-3 border-bottom">
+            <i class="fas fa-id-card d-inline-flex align-items-center justify-content-center" aria-hidden="true"></i>
             <div>
-              <h2>Teléfono</h2>
-              <p>Puedes actualizar tu número de contacto</p>
+              <h2 class="mb-1">Información personal</h2>
+              <p class="mb-0">Datos registrados en tu cuenta</p>
             </div>
           </header>
-          <form [formGroup]="telefonoForm" (ngSubmit)="guardarTelefono()"><label><span>Número de teléfono</span><input
-                formControlName="telefono" maxlength="10" inputmode="numeric"><small
-                *ngIf="telefonoForm.controls.telefono.invalid && telefonoForm.controls.telefono.touched">Ingresa
-                exactamente 10 números.</small></label><button type="submit"><i class="fas fa-floppy-disk"></i> Guardar
-              teléfono</button></form>
+
+          <dl class="mb-0 px-4 py-2">
+            <div class="row g-1 py-3 border-bottom">
+              <dt class="col-sm-5">Nombre y apellido</dt>
+              <dd class="col-sm-7 mb-0">{{ usuario.nombreCompleto }}</dd>
+            </div>
+            <div class="row g-1 py-3 border-bottom">
+              <dt class="col-sm-5">Cédula</dt>
+              <dd class="col-sm-7 mb-0">{{ usuario.username }}</dd>
+            </div>
+            <div class="row g-1 py-3">
+              <dt class="col-sm-5">Correo electrónico</dt>
+              <dd class="col-sm-7 mb-0 text-break">{{ usuario.correoInstitucional }}</dd>
+            </div>
+          </dl>
+
+          <aside class="d-flex gap-2 m-3 p-3">
+            <i class="fas fa-circle-info mt-1" aria-hidden="true"></i>
+            <p class="mb-0">
+              Para corregir nombre, apellido, cédula o correo, comunícate con Administración:
+              <a href="mailto:auditoriounibe@gmail.com">auditoriounibe&#64;gmail.com</a>
+            </p>
+          </aside>
         </section>
-        <section class="form-card">
-          <header><i class="fas fa-lock"></i>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex flex-column gap-4">
+        <!-- Formulario editable para actualizar el número telefónico. -->
+        <section class="account-card card overflow-hidden shadow-sm">
+          <header class="card-heading d-flex align-items-center gap-3 p-3 border-bottom">
+            <i class="fas fa-phone d-inline-flex align-items-center justify-content-center" aria-hidden="true"></i>
             <div>
-              <h2>Cambiar contraseña</h2>
-              <p>La contraseña actual nunca será visible</p>
+              <h2 class="mb-1">Teléfono</h2>
+              <p class="mb-0">Puedes actualizar tu número de contacto</p>
             </div>
           </header>
-          <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()">
-            <label><span>Contraseña actual</span>
-              <div class="password-control"><input [type]="mostrarActual?'text':'password'"
-                  formControlName="passwordActual"><button type="button" (click)="mostrarActual=!mostrarActual"><i
-                    class="fas" [ngClass]="mostrarActual?'fa-eye-slash':'fa-eye'"></i></button></div>
-            </label>
-            <label><span>Nueva contraseña</span>
-              <div class="password-control"><input [type]="mostrarNueva?'text':'password'"
-                  formControlName="nuevaPassword"><button type="button" (click)="mostrarNueva=!mostrarNueva"><i
-                    class="fas" [ngClass]="mostrarNueva?'fa-eye-slash':'fa-eye'"></i></button></div><small
-                *ngIf="passwordForm.controls.nuevaPassword.invalid && passwordForm.controls.nuevaPassword.touched">Mínimo
-                8 caracteres con mayúscula, minúscula, número y símbolo.</small>
-            </label>
-            <label><span>Confirmar nueva contraseña</span><input type="password"
-                formControlName="confirmarPassword"><small
-                *ngIf="passwordForm.controls.confirmarPassword.touched && passwordForm.controls.confirmarPassword.value !== passwordForm.controls.nuevaPassword.value">Las
-                contraseñas no coinciden.</small></label><button type="submit"><i class="fas fa-key"></i> Cambiar
-              contraseña</button>
+
+          <form class="p-3 d-flex flex-column gap-3" [formGroup]="telefonoForm" (ngSubmit)="guardarTelefono()">
+            <div>
+              <label class="form-label fw-semibold" for="telefonoCuenta">Número de teléfono</label>
+              <input class="form-control" id="telefonoCuenta" type="tel" formControlName="telefono" maxlength="10"
+                inputmode="numeric" autocomplete="tel"
+                [class.is-invalid]="telefonoForm.controls.telefono.invalid && telefonoForm.controls.telefono.touched">
+              <small *ngIf="telefonoForm.controls.telefono.invalid && telefonoForm.controls.telefono.touched"
+                class="field-error">Ingresa exactamente 10 números.</small>
+            </div>
+            <button type="submit" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-2">
+              <i class="fas fa-floppy-disk" aria-hidden="true"></i>
+              Guardar teléfono
+            </button>
+          </form>
+        </section>
+
+        <!-- Formulario para cambiar la contraseña sin mostrar la clave anterior. -->
+        <section class="account-card card overflow-hidden shadow-sm">
+          <header class="card-heading d-flex align-items-center gap-3 p-3 border-bottom">
+            <i class="fas fa-lock d-inline-flex align-items-center justify-content-center" aria-hidden="true"></i>
+            <div>
+              <h2 class="mb-1">Cambiar contraseña</h2>
+              <p class="mb-0">La contraseña actual nunca será visible</p>
+            </div>
+          </header>
+
+          <form class="p-3 d-flex flex-column gap-3" [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()">
+            <div>
+              <label class="form-label fw-semibold" for="passwordActual">Contraseña actual</label>
+              <div class="password-control position-relative">
+                <input class="form-control pe-5" id="passwordActual" [type]="mostrarActual ? 'text' : 'password'"
+                  formControlName="passwordActual" autocomplete="current-password">
+                <button type="button" class="password-toggle btn" (click)="mostrarActual = !mostrarActual"
+                  [attr.aria-label]="mostrarActual ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'">
+                  <i class="fas" [ngClass]="mostrarActual ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label fw-semibold" for="nuevaPassword">Nueva contraseña</label>
+              <div class="password-control position-relative">
+                <input class="form-control pe-5" id="nuevaPassword" [type]="mostrarNueva ? 'text' : 'password'"
+                  formControlName="nuevaPassword" autocomplete="new-password"
+                  [class.is-invalid]="passwordForm.controls.nuevaPassword.invalid && passwordForm.controls.nuevaPassword.touched">
+                <button type="button" class="password-toggle btn" (click)="mostrarNueva = !mostrarNueva"
+                  [attr.aria-label]="mostrarNueva ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'">
+                  <i class="fas" [ngClass]="mostrarNueva ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                </button>
+              </div>
+              <small *ngIf="passwordForm.controls.nuevaPassword.invalid && passwordForm.controls.nuevaPassword.touched"
+                class="field-error">Mínimo 8 caracteres con mayúscula, minúscula, número y símbolo.</small>
+            </div>
+
+            <div>
+              <label class="form-label fw-semibold" for="confirmarPassword">Confirmar nueva contraseña</label>
+              <div class="password-control position-relative">
+                <input class="form-control pe-5" id="confirmarPassword"
+                  [type]="mostrarConfirmacion ? 'text' : 'password'" formControlName="confirmarPassword"
+                  autocomplete="new-password"
+                  [class.is-invalid]="passwordForm.controls.confirmarPassword.touched && passwordForm.controls.confirmarPassword.value !== passwordForm.controls.nuevaPassword.value">
+                <button type="button" class="password-toggle btn" (click)="mostrarConfirmacion = !mostrarConfirmacion"
+                  [attr.aria-label]="mostrarConfirmacion ? 'Ocultar confirmación' : 'Mostrar confirmación'">
+                  <i class="fas" [ngClass]="mostrarConfirmacion ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                </button>
+              </div>
+              <small
+                *ngIf="passwordForm.controls.confirmarPassword.touched && passwordForm.controls.confirmarPassword.value !== passwordForm.controls.nuevaPassword.value"
+                class="field-error">Las contraseñas no coinciden.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-2">
+              <i class="fas fa-key" aria-hidden="true"></i>
+              Cambiar contraseña
+            </button>
           </form>
         </section>
       </div>
